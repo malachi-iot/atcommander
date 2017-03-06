@@ -1,0 +1,4 @@
+# QT-creator user config files
+*.user
+
+build/
