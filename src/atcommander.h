@@ -1,10 +1,13 @@
 #pragma once
 
-template <class TStream>
+#include "experimental.h"
+
+template <class TIStream, class TOStream = TIStream>
 class ATCommander
 {
-    TStream& stream;
+    experimental::BlockingOutputStream<TOStream> ostream;
+    experimental::BlockingInputStream<TIStream> istream;
 
 public:
-    ATCommander(TStream& stream) : stream(stream) {}
+    ATCommander(TOStream& ostream, TIStream& istream) : ostream(ostream), istream(istream) {}
 };
