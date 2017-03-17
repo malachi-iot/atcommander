@@ -1,3 +1,6 @@
 [submodule "ext/Catch"]
 	path = ext/Catch
 	url = git@github.com:philsquared/Catch.git
+[submodule "ext/util.embedded"]
+	path = ext/util.embedded
+	url = git@github.com:malachib/util.embedded.git
