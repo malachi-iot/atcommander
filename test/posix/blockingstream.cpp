@@ -14,10 +14,13 @@ public:
     void write(const uint8_t *source, size_t len);
 };*/
 
+namespace experimental {
+
 template<>
-void experimental::BlockingOutputStream<std::ostream>::write(const uint8_t* buf, size_t len)
+void BlockingOutputStream<std::ostream>::write(const uint8_t* buf, size_t len)
 {
     stream.write((const std::ostream::char_type*)buf, len);
+}
 }
 
 template <class TOStream, typename T>
