@@ -20,9 +20,17 @@ void experimental::BlockingOutputStream<std::ostream>::write(const uint8_t* buf,
     stream.write((const std::ostream::char_type*)buf, len);
 }
 
+template <class TOStream, typename T>
+inline void operator <<(experimental::BlockingOutputStream<TOStream>& stream, T& value)
+{
+    stream.stream << value;
+}
+
 TEST_CASE( "Blocking Stream (wrapper) tests", "[stream-blocking]" )
 {
     experimental::BlockingOutputStream<std::ostream> outTest(std::cout);
+    const char* value = "Hi there!";
 
+    outTest << value;
     outTest.test();
 }

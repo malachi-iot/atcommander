@@ -39,6 +39,8 @@ struct ValueHolder<EmptyValue>
 template <class TOStream>
 class BlockingOutputStream
 {
+    // FIX: make this private once I figure out how to make my "friend" operator work right
+public:
     TOStream& stream;
 
 public:
@@ -47,6 +49,11 @@ public:
     void putc(uint8_t ch);
 
     void write(const uint8_t* source, size_t len);
+
+    /*
+    template <typename T>
+    friend void operator << (BlockingOutputStream<TOStream>& stream, const T& value);
+    */
 
     void test()
     {
