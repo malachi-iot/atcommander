@@ -1,13 +1,15 @@
 #pragma once
 
 #include "experimental.h"
+#include "fact/iostream.h"
 
-template <class TIStream, class TOStream = TIStream>
+namespace fstd = FactUtilEmbedded::std;
+
 class ATCommander
 {
-    experimental::BlockingOutputStream<TOStream> ostream;
-    experimental::BlockingInputStream<TIStream> istream;
-
 public:
-    ATCommander(TOStream& ostream, TIStream& istream) : ostream(ostream), istream(istream) {}
+    fstd::istream& cin;
+    fstd::ostream& cout;
+
+    ATCommander(fstd::istream& cin, fstd::ostream& cout) : cin(cin), cout(cout) {}
 };
