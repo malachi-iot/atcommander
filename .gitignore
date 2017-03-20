@@ -1,4 +1,9 @@
+# CLion metafiles
+**/.idea/workspace.xml
+**/.idea/tasks.xml
+
 # QT-creator user config files
 *.user
 
 build/
+cmake-build-debug/
