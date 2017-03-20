@@ -30,3 +30,5 @@ add_library(util_embedded ${util_embedded_source})
 file(GLOB main_source "*.cpp")
 
 add_executable(${PROJECT_NAME} ${main_source})
+target_link_libraries(${PROJECT_NAME} atcommander util_embedded)
+
