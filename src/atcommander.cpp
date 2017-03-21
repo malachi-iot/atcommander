@@ -88,6 +88,7 @@ size_t ATCommander::input(char* input, size_t max)
 }
 
 
+/*
 template <>
 ATCommander& ATCommander::operator>>(const char* matchValue)
 {
@@ -97,24 +98,25 @@ ATCommander& ATCommander::operator>>(const char* matchValue)
     }
     return *this;
 }
+*/
 
 
-
+/*
 template <>
 ATCommander& ATCommander::operator>>(char* inputValue)
 {
     input(inputValue, 100);
     return *this;
 }
-
-
+*/
+/*
 template <>
 bool ATCommander::input(const char*& input)
 {
     // be sure to FAIL here
     //static_assert("Cannot input into a static pointer");
     return false;
-}
+} */
 
 
 

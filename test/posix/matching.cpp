@@ -40,7 +40,8 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
     GIVEN("")
     {
         float value;
-        atc.input(value);
+        //atc.input(value);
+        atc >> value;
         REQUIRE(!atc.is_in_error());
         REQUIRE(value == 3.0f);
     }

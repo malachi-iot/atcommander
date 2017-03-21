@@ -24,6 +24,9 @@ class ATCommander
     const char* error_category = nullptr;
     const char* error_description = nullptr;
 
+    template <typename T>
+    friend ATCommander& operator >>(ATCommander& atc, T);
+
     // TODO: callback/event mechanism to fire when errors happen
 
 protected:
@@ -154,9 +157,10 @@ public:
         return true;
     }
 
+    /*
     template <typename T>
     ATCommander& operator>>(T inputValue);
-
+    */
     /*
     // FIX: not getting picked up
     template <> template<size_t size>
@@ -197,12 +201,58 @@ public:
     void send() { cout << fstd::endl; }
 };
 
+/*
+template <typename T>
+inline ATCommander& operator >>(ATCommander& atc, T value)
+{
+    value = atc.input(value);
+    return atc;
+}
 
-// To change delimiters, we'll need to do something like this:
-// http://stackoverflow.com/questions/7302996/changing-the-delimiter-for-cin-c
+template <>
+inline ATCommander& operator >>(ATCommander& atc, const char* value)
+{
+    return atc;
+} */
+template <typename T>
+inline ATCommander& operator >>(ATCommander& atc, T value);
+
 inline ATCommander& operator >>(ATCommander& atc, char& value)
 {
     value = atc.get();
     return atc;
 }
+
+inline ATCommander& operator >>(ATCommander& atc, float& value)
+{
+    atc.input(value);
+    return atc;
+}
+
+
+template <>
+inline ATCommander& operator>>(ATCommander& atc, char* inputValue)
+{
+    atc.input(inputValue, 100);
+    return atc;
+}
+
+template <>
+inline ATCommander& operator>>(ATCommander& atc, const char* matchValue)
+{
+    if(!atc.input_match(matchValue))
+    {
+        atc.set_error("match", matchValue);
+    }
+    return atc;
+}
+
+/*
+template <typename T>
+inline ATCommander& operator >>(ATCommander& atc, T& value)
+{
+    atc.input(value);
+    return atc;
+}
+*/
 

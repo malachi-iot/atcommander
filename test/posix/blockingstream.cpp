@@ -34,6 +34,6 @@ TEST_CASE( "Blocking Stream (wrapper) tests", "[stream-blocking]" )
     experimental::BlockingOutputStream<std::ostream> outTest(std::cout);
     const char* value = "Hi there!";
 
-    outTest << value;
-    outTest.test();
+    //outTest << value;
+    //outTest.test();
 }
