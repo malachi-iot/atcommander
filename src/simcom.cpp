@@ -7,9 +7,9 @@
 namespace simcom {
 
 constexpr char generic_at::MUX[];
-constexpr char generic_at::AT[];
 constexpr char generic_at::CIP[];
 
 constexpr char generic_at::CIPMUX[];
+constexpr char generic_at::CIPMODE[];
 
 }

@@ -19,33 +19,49 @@ class _27007
 
     //namespace std = FactUtilEmbedded::std;
 
+    static constexpr char CGATT[] = "+CGATT";
+
 public:
     static void ps_attach(ATCommander& atc, bool attach)
     {
-        atc.cout << "AT";
-        atc.cout << "+CGATT";
+        atc << "AT";
+        atc << "+CGATT";
         atc.cout << (attach ? '1': '0');
         atc.cout << lwstd::endl;
-        //cin << "OK";
-        //cin << lwstd::endl;
+
+        atc.check_for_ok();
     }
 
 
     static void report_mobile_equipment_error(ATCommander& atc, uint8_t level)
     {
-        atc.cout << "AT";
-        atc.cout << "CMEE=" << level;
+        atc << "AT";
+        atc << "CMEE=" << level;
         atc.cout << lwstd::endl;
-        //cin << "OK";
-        //cin << lwstd::endl;
+
+        atc.check_for_ok();
     };
+
+    //static void echo_query(ATCommander& atc
 
     static bool is_ps_attached(ATCommander& atc)
     {
-        atc.cout << "AT";
-        atc.cout << "+CGATT?" << lwstd::endl;
+        char level;
+
+        atc << atc.AT;
+        atc << CGATT;
+        atc.cout << '?';
+
+        atc.send();
+
+        atc.input_match(CGATT);
+        atc.input_match(": ");
+        atc.input(level);
+
+        atc.check_for_ok();
+
         // look for +CGATT: <state> \r\n OK
-        return false;
+        return level == '1';
     }
 };
 

@@ -19,11 +19,11 @@ class generic_at
     typedef ATCommander& ATC;
 
     // EXPERIMENTAL
-    static constexpr char AT[] = "AT";
     static constexpr char CIP[] = "+CIP";
     static constexpr char MUX[] = "MUX";
 
     static constexpr char CIPMUX[] = "+CIPMUX";
+    static constexpr char CIPMODE[] = "+CIPMODE";
 
     typedef lwstd::ostream ostream;
     typedef lwstd::istream istream;
@@ -31,15 +31,23 @@ class generic_at
 public:
     static void set_ipmux(ATC atc, bool multi)
     {
-        atc.cout << AT << CIP << MUX << '=' << (multi ? 1 : 0) << lwstd::endl;
-        // cin << "OK"
+        atc.cout << atc.AT << CIP << MUX << '=' << (multi ? 1 : 0) << lwstd::endl;
+        atc.check_for_ok();
     }
 
     static bool get_ipmux(ATC atc)
     {
         char mux;
 
-        atc.cout << AT << CIPMUX << '?' << lwstd::endl;
+        atc.cout << atc.AT << CIPMUX << '?' << lwstd::endl;
+
+        atc.ignore_whitespace_and_newlines();
+        atc.input_match(CIPMUX);
+        atc.input_match(": ");
+        atc.input(mux);
+
+        atc.check_for_ok();
+
         //cin >> "+CIPMUX: " >> mux >> endl;
 
         return mux == '1';
@@ -47,7 +55,8 @@ public:
 
     static void set_transparent(ATC atc, bool transparent)
     {
-        atc.cout << "AT+CIPMODE=" << (transparent ? '1' : '0') << lwstd::endl;
+        atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << lwstd::endl;
+        atc.check_for_ok();
         // cin >> "OK"
     }
 };

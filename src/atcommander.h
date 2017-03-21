@@ -2,23 +2,53 @@
 
 #include "experimental.h"
 #include "fact/iostream.h"
+#include "fact/CircularBuffer.h"
 #include <cstdlib>
 typedef const char* PGM_P;
 #include "fact/string_convert.h"
 
 namespace fstd = FactUtilEmbedded::std;
 
+#define DEBUG
+// FIX: really should splice in a different istream
+#define DEBUG_SIMULATED
+
 class ATCommander
 {
     static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
-    static constexpr char OK[] = "OK";
-    static constexpr char AT[] = "AT";
 
     const char* delimiters = WHITESPACE_NEWLINE;
 
     char cache = 0;
 
+    const char* error_category = nullptr;
+    const char* error_description = nullptr;
+
+    // TODO: callback/event mechanism to fire when errors happen
+
+protected:
+    void set_error(const char* error, const char* description)
+    {
+#ifdef DEBUG
+        fstd::clog << "ATCommander error: " << error << ": " << description << fstd::endl;
+#endif
+        this->error_category = error;
+        this->error_description = description;
+    }
+
 public:
+#ifdef DEBUG_SIMULATED
+    FactUtilEmbedded::layer1::CircularBuffer<char, 128> debugBuffer;
+#endif
+
+
+    bool is_in_error() { return false; }
+    void reset_error() {}
+    const char* get_error() { return error_description; }
+
+    static constexpr char OK[] = "OK";
+    static constexpr char AT[] = "AT";
+
     // TODO: fix this name
     bool is_cached() { return cache != 0; }
 
@@ -35,6 +65,9 @@ public:
 
     int get()
     {
+#ifdef DEBUG_SIMULATED
+        return debugBuffer.available() ? debugBuffer.get() : -1;
+#else
         if(is_cached())
         {
             char temp = cache;
@@ -43,12 +76,17 @@ public:
         }
 
         return cin.get();
+#endif
     }
 
 
     void unget(char ch)
     {
+#ifdef DEBUG_SIMULATED
+        debugBuffer.put(ch);
+#else
         cache = ch;
+#endif
     }
 
     bool is_match(char c, const char* match)
@@ -71,7 +109,10 @@ public:
         char ch;
 
         while((ch = *match++))
-            if(ch != get()) return false;
+        {
+            char _ch = get();
+            if(ch != _ch) return false;
+        }
 
         return true;
     }
@@ -83,32 +124,42 @@ public:
 
 
     template <typename T>
-    bool input(T& storedValue)
+    bool input(T& inputValue)
     {
+        // TODO: disallow constants from coming in here
+        //static_assert(T, "Cannot input into a static pointer");
+
         //constexpr uint8_t
         auto maxlen = experimental::maxStringLength<T>();
         char buffer[maxlen];
 
         size_t n = input(buffer, maxlen);
 #ifdef DEBUG
+        const char* error = validateString<T>(buffer);
+        if(error)
+        {
+            set_error("validation", error);
+            return false;
+        }
+
         if(n == 0) return false;
-        validateString<T>(buffer);
 #endif
-        storedValue = fromString<T>(buffer);
+        inputValue = fromString<T>(buffer);
 
         return true;
     }
 
-
     template <typename T>
     ATCommander& operator>>(T inputValue);
 
+    /*
     // FIX: not getting picked up
     template <> template<size_t size>
     ATCommander& operator>>(char buf[size])
     {
         return *this;
     }
+    */
 
     /*
     template <typename T>
@@ -122,6 +173,7 @@ public:
     ATCommander& operator<<(T& outputValue)
     {
         cout << outputValue;
+        return *this;
     }
 
     // retrieve and ignore all whitespace and newlines
@@ -136,4 +188,6 @@ public:
 
 
     bool check_for_ok();
+
+    void send() { cout << fstd::endl; }
 };
