@@ -26,7 +26,7 @@ void ATCommander::ignore_whitespace()
 {
     char ch;
 
-    while(ch = get() == ' ');
+    while((ch = get()) == ' ');
 
     unget(ch);
 }
@@ -59,4 +59,44 @@ bool ATCommander::skip_newline()
     }
 
     return false;
+}
+
+
+
+// retrieves a text string in input up to max size
+// leaves any discovered delimiter cached
+size_t ATCommander::input(char* input, size_t max)
+{
+    char ch;
+    size_t len = 0;
+
+    while(!is_delimiter(ch = get()) && len < max)
+    {
+        if(ch == -1) return 0;
+
+        *input++ = ch;
+        len++;
+    }
+
+    // FIX: be sure to check len also
+    unget(ch);
+
+    return len;
+}
+
+
+template <>
+ATCommander& ATCommander::operator>>(const char* matchValue)
+{
+    input_match(matchValue);
+    return *this;
+}
+
+
+
+template <>
+ATCommander& ATCommander::operator>>(char* matchValue)
+{
+    input(matchValue, 100);
+    return *this;
 }

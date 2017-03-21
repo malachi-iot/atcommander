@@ -11,6 +11,12 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
 
     ATCommander atc(cin, cout);
 
-    atc >> "Testing 1 2 3";
     atc >> buf;
+    atc >> "Testing 1 2 3";
+
+    GIVEN("")
+    {
+        float value;
+        atc.input(value);
+    }
 }

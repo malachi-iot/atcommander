@@ -8,18 +8,6 @@
 #include "3gpp.h"
 #include "simcom.h"
 
-namespace FactUtilEmbedded { namespace std {
-
-#ifdef FEATURE_IOS_STREAMBUF_FULL
-ostream cout;
-istream cin;
-#else
-ostream cout(*stdout);
-istream cin(*stdin);
-#endif
-}}
-
-
 using namespace FactUtilEmbedded::std;
 
 TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )

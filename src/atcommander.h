@@ -2,6 +2,9 @@
 
 #include "experimental.h"
 #include "fact/iostream.h"
+#include <cstdlib>
+typedef const char* PGM_P;
+#include "fact/string_convert.h"
 
 namespace fstd = FactUtilEmbedded::std;
 
@@ -25,22 +28,12 @@ public:
     ATCommander(fstd::istream& cin, fstd::ostream& cout) : cin(cin), cout(cout) {}
 
 
-    ATCommander& operator>>(const char* match)
-    {
-        return *this;
-    }
-
-    ATCommander& operator>>(char* input)
-    {
-        return *this;
-    }
-
     void set_delimiter(const char* delimiters)
     {
         this->delimiters = delimiters;
     }
 
-    char get()
+    int get()
     {
         if(is_cached())
         {
@@ -62,7 +55,7 @@ public:
     {
         char delim;
 
-        while(delim = *match++)
+        while((delim = *match++))
             if(delim == c) return true;
 
         return false;
@@ -77,7 +70,7 @@ public:
     {
         char ch;
 
-        while(ch = *match++)
+        while((ch = *match++))
             if(ch != get()) return false;
 
         return true;
@@ -86,23 +79,50 @@ public:
 
     // retrieves a text string in input up to max size
     // leaves any discovered delimiter cached
-    size_t input(char* input, size_t max)
+    size_t input(char* input, size_t max);
+
+
+    template <typename T>
+    bool input(T& storedValue)
     {
-        char ch;
-        size_t len = 0;
+        //constexpr uint8_t
+        auto maxlen = experimental::maxStringLength<T>();
+        char buffer[maxlen];
 
-        while(!is_delimiter(ch = get()) && len < max)
-        {
-            *input++ = ch;
-            len++;
-        }
+        size_t n = input(buffer, maxlen);
+#ifdef DEBUG
+        if(n == 0) return false;
+        validateString<T>(buffer);
+#endif
+        storedValue = fromString<T>(buffer);
 
-        // FIX: be sure to check len also
-        unget(ch);
-
-        return len;
+        return true;
     }
 
+
+    template <typename T>
+    ATCommander& operator>>(T inputValue);
+
+    // FIX: not getting picked up
+    template <> template<size_t size>
+    ATCommander& operator>>(char buf[size])
+    {
+        return *this;
+    }
+
+    /*
+    template <typename T>
+    ATCommander& operator>>(T& inputValue)
+    {
+        input(inputValue);
+        return *this;
+    } */
+
+    template <typename T>
+    ATCommander& operator<<(T& outputValue)
+    {
+        cout << outputValue;
+    }
 
     // retrieve and ignore all whitespace and newlines
     // leaves non-whitespace/newline character cached
