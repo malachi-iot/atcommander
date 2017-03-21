@@ -7,9 +7,18 @@ namespace fstd = FactUtilEmbedded::std;
 
 class ATCommander
 {
-    const char* delimiters = " \r\n";
+    static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
+    static constexpr char OK[] = "OK";
+    static constexpr char AT[] = "AT";
+
+    const char* delimiters = WHITESPACE_NEWLINE;
+
+    char cache = 0;
 
 public:
+    // TODO: fix this name
+    bool is_cached() { return cache != 0; }
+
     fstd::istream& cin;
     fstd::ostream& cout;
 
@@ -31,17 +40,37 @@ public:
         this->delimiters = delimiters;
     }
 
-    char get() { return cin.get(); }
-
-    bool is_delimiter(char c)
+    char get()
     {
-        const char* _delimiters = delimiters;
+        if(is_cached())
+        {
+            char temp = cache;
+            cache = 0;
+            return temp;
+        }
+
+        return cin.get();
+    }
+
+
+    void unget(char ch)
+    {
+        cache = ch;
+    }
+
+    bool is_match(char c, const char* match)
+    {
         char delim;
 
-        while(delim = *_delimiters++)
+        while(delim = *match++)
             if(delim == c) return true;
 
         return false;
+    }
+
+    bool is_delimiter(char c)
+    {
+        return is_match(c, delimiters);
     }
 
     bool input_match(const char* match)
@@ -55,6 +84,8 @@ public:
     }
 
 
+    // retrieves a text string in input up to max size
+    // leaves any discovered delimiter cached
     size_t input(char* input, size_t max)
     {
         char ch;
@@ -66,6 +97,23 @@ public:
             len++;
         }
 
+        // FIX: be sure to check len also
+        unget(ch);
+
         return len;
     }
+
+
+    // retrieve and ignore all whitespace and newlines
+    // leaves non-whitespace/newline character cached
+    void ignore_whitespace_and_newlines();
+
+    // retrieve input until it's not whitespace,
+    // leaves non-whitespace character cached
+    void ignore_whitespace();
+
+    bool skip_newline();
+
+
+    bool check_for_ok();
 };
