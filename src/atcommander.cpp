@@ -67,19 +67,22 @@ bool ATCommander::skip_newline()
 // leaves any discovered delimiter cached
 size_t ATCommander::input(char* input, size_t max)
 {
-    char ch;
+    int ch;
     size_t len = 0;
 
-    while(!is_delimiter(ch = get()) && len < max)
+    while(!is_delimiter(ch = get()) && len < max && ch != -1)
     {
-        if(ch == -1) return 0;
-
         *input++ = ch;
         len++;
     }
 
-    // FIX: be sure to check len also
-    unget(ch);
+    // FIX: check if input can be assigned to still
+    // (ensure we haven't exceeded max)
+    *input = 0;
+
+    if(ch != -1)
+        // FIX: be sure to check len also
+        unget(ch);
 
     return len;
 }
@@ -98,9 +101,9 @@ ATCommander& ATCommander::operator>>(const char* matchValue)
 
 
 template <>
-ATCommander& ATCommander::operator>>(char* matchValue)
+ATCommander& ATCommander::operator>>(char* inputValue)
 {
-    input(matchValue, 100);
+    input(inputValue, 100);
     return *this;
 }
 

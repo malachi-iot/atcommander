@@ -42,8 +42,8 @@ public:
 #endif
 
 
-    bool is_in_error() { return false; }
-    void reset_error() {}
+    bool is_in_error() { return error_description; }
+    void reset_error() { error_description = nullptr; }
     const char* get_error() { return error_description; }
 
     static constexpr char OK[] = "OK";
@@ -65,9 +65,6 @@ public:
 
     int get()
     {
-#ifdef DEBUG_SIMULATED
-        return debugBuffer.available() ? debugBuffer.get() : -1;
-#else
         if(is_cached())
         {
             char temp = cache;
@@ -75,6 +72,9 @@ public:
             return temp;
         }
 
+#ifdef DEBUG_SIMULATED
+        return debugBuffer.available() ? debugBuffer.get() : -1;
+#else
         return cin.get();
 #endif
     }
@@ -82,8 +82,9 @@ public:
 
     void unget(char ch)
     {
-#ifdef DEBUG_SIMULATED
-        debugBuffer.put(ch);
+#ifdef DEBUG_SIMULATED_BROKEN
+        // TODO: need circular buffer unget
+        //debugBuffer.put(ch);
 #else
         cache = ch;
 #endif
@@ -111,7 +112,11 @@ public:
         while((ch = *match++))
         {
             char _ch = get();
-            if(ch != _ch) return false;
+            if(ch != _ch)
+            {
+                unget(_ch);
+                return false;
+            }
         }
 
         return true;
@@ -191,3 +196,13 @@ public:
 
     void send() { cout << fstd::endl; }
 };
+
+
+// To change delimiters, we'll need to do something like this:
+// http://stackoverflow.com/questions/7302996/changing-the-delimiter-for-cin-c
+inline ATCommander& operator >>(ATCommander& atc, char& value)
+{
+    value = atc.get();
+    return atc;
+}
+
