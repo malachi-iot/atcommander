@@ -3,12 +3,9 @@
 
 #include "hayes.h"
 
-using namespace FactUtilEmbedded::std;
-
-
 TEST_CASE( "Simple hayes commands", "[hayes]" )
 {
-    ATCommander atc(cin, cout);
+    ATCommander atc(fstd::cin, fstd::cout);
 
     GIVEN("")
     {

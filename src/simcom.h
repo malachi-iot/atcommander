@@ -12,8 +12,6 @@
 namespace simcom
 {
 
-namespace lwstd = FactUtilEmbedded::std;
-
 class generic_at
 {
     typedef ATCommander& ATC;
@@ -36,13 +34,13 @@ class generic_at
 
     static constexpr char CDNSGIP[] = "+CDNSGIP"; // IP lookup of a given domain name
 
-    typedef lwstd::ostream ostream;
-    typedef lwstd::istream istream;
+    typedef fstd::ostream ostream;
+    typedef fstd::istream istream;
 
 public:
     static void set_ipmux(ATC atc, bool multi)
     {
-        atc.cout << atc.AT << CIP << MUX << '=' << (multi ? 1 : 0) << lwstd::endl;
+        atc.cout << atc.AT << CIP << MUX << '=' << (multi ? 1 : 0) << fstd::endl;
         atc.check_for_ok();
     }
 
@@ -67,7 +65,7 @@ public:
 
     static void set_transparent(ATC atc, bool transparent)
     {
-        atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << lwstd::endl;
+        atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << fstd::endl;
         atc.check_for_ok();
         // cin >> "OK"
     }

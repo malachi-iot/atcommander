@@ -10,7 +10,11 @@
 
 namespace _3gpp
 {
+#ifdef FEATURE_IOSTREAM
+    namespace lwstd = fstd;
+#else
     namespace lwstd = FactUtilEmbedded::std;
+#endif
 
 class _27007
 {

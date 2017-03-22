@@ -3,8 +3,6 @@
 #include "3gpp.h"
 #include "simcom.h"
 
-using namespace FactUtilEmbedded::std;
-
 template <class TBuffer>
 void insert(TBuffer& buf, const char* s)
 {
@@ -21,7 +19,7 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
     char c1;
     char c2;
 
-    ATCommander atc(cin, cout);
+    ATCommander atc(fstd::cin, fstd::cout);
 
     insert(atc.debugBuffer, buf);
     insert(atc.debugBuffer, "Testing 1 2 3");

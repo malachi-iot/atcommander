@@ -8,14 +8,12 @@
 #include "3gpp.h"
 #include "simcom.h"
 
-using namespace FactUtilEmbedded::std;
-
 using namespace _3gpp;
 using namespace simcom;
 
 TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
 {
-    ATCommander atc(cin, cout);
+    ATCommander atc(fstd::cin, fstd::cout);
 
     GIVEN("misc")
     {

@@ -4,8 +4,6 @@ project(test_atcommander)
 
 ADD_DEFINITIONS(-std=c++11)
 
-ADD_DEFINITIONS(-DNODUINO)
-ADD_DEFINITIONS(-DFEATURE_IOSTREAM_SHIM)
 ADD_DEFINITIONS(-D__POSIX__)
 
 INCLUDE_DIRECTORIES(lib/Catch/include)
@@ -13,7 +11,8 @@ INCLUDE_DIRECTORIES(lib/atcommander)
 INCLUDE_DIRECTORIES(lib/util.embedded/src)
 
 file(GLOB atcommander_source "${PROJECT_SOURCE_DIR}/lib/atcommander/*.cpp"
-    "${PROJECT_SOURCE_DIR}/lib/atcommander/*.h")
+    "${PROJECT_SOURCE_DIR}/lib/atcommander/*.h"
+    "${PROJECT_SOURCE_DIR}/lib/atcommander/CMakeLists.txt")
 
 # don't know why, but *.h?? ends up excluding a lot of files
 file(GLOB_RECURSE util_embedded_source "${PROJECT_SOURCE_DIR}/lib/util.embedded/src/*.c??"

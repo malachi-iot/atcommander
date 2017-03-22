@@ -1,13 +1,20 @@
 #pragma once
 
 #include "experimental.h"
-#include "fact/iostream.h"
 #include "fact/CircularBuffer.h"
 #include <cstdlib>
 typedef const char* PGM_P;
 #include "fact/string_convert.h"
+#ifdef FEATURE_IOSTREAM
+#include <iostream>
+
+namespace fstd = ::std;
+#else
+#include "fact/iostream.h"
 
 namespace fstd = FactUtilEmbedded::std;
+#endif
+
 
 #define DEBUG
 // FIX: really should splice in a different istream
