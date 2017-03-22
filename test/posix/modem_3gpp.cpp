@@ -11,18 +11,28 @@
 using namespace FactUtilEmbedded::std;
 
 using namespace _3gpp;
+using namespace simcom;
 
 TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
 {
     ATCommander atc(cin, cout);
 
-    _3gpp::_27007::is_ps_attached(atc);
-    simcom::generic_at::set_ipmux(atc, false);
+    GIVEN("misc")
+    {
+        _27007::is_ps_attached(atc);
+        generic_at::set_ipmux(atc, false);
+        generic_at::get_ipmux(atc);
+    }
+
     GIVEN("registration request")
     {
         uint8_t n;
         uint8_t stat;
 
         _27007::get_registration(atc, n, stat);
+    }
+    GIVEN("")
+    {
+        generic_at::set_sms_format(atc, '1');
     }
 }

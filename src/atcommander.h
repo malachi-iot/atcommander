@@ -39,6 +39,17 @@ protected:
         this->error_description = description;
     }
 
+
+    void _send() {}
+
+    template <class T, class ...TArgs>
+    void _send(T value, TArgs...args)
+    {
+        cout << value;
+        _send(args...);
+    }
+
+
 public:
 #ifdef DEBUG_SIMULATED
     FactUtilEmbedded::layer1::CircularBuffer<char, 128> debugBuffer;
@@ -227,6 +238,16 @@ public:
     // part of its response
     void do_request_prefix(const char* cmd);
 
+
+    template <typename T, size_t N>
+    void do_command_opt(T (&s)[N])
+    {
+        // TODO: do a check to grab only the right types here (const char[])
+        // so that we can overload with do_command
+        cout.write(AT, 2);
+        cout.write(s, N);
+    }
+
     // do a basic command with no parameters
     // no ENDL is sent
     void do_command(const char* cmd)
@@ -238,12 +259,18 @@ public:
     // a "assign" is an "ATxxxx=" command
     // parameters are handled by << operator
     // no ENDL is sent
-    void do_assign(const char* cmd)
-    {
-        do_command(cmd);
-        cout.put('=');
-    }
+    void do_assign(const char* cmd);
 
+
+    template <class ...TArgs>
+    void send_assign(const char* cmd, TArgs...args)
+    {
+        const int size = sizeof...(args);
+
+        do_assign(cmd);
+        _send(args...);
+        send();
+    }
 };
 
 /*

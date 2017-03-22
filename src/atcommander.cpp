@@ -88,6 +88,13 @@ size_t ATCommander::input(char* input, size_t max)
 }
 
 
+void ATCommander::do_assign(const char *cmd)
+{
+    do_command(cmd);
+    cout.put('=');
+}
+
+
 /*
 template <>
 ATCommander& ATCommander::operator>>(const char* matchValue)

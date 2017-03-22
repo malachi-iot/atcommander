@@ -40,9 +40,10 @@ public:
 
     static bool get_ipmux(ATC atc)
     {
+        // TODO:
         char mux;
 
-        atc.cout << atc.AT << CIPMUX << '?' << lwstd::endl;
+        atc.send_request(CIPMUX);
 
         atc.ignore_whitespace_and_newlines();
         atc.input_match(CIPMUX);
@@ -67,26 +68,20 @@ public:
     // mode '1' = text, '0' = pdu
     static void set_sms_format(ATC atc, char mode)
     {
-        atc.do_assign(CMGF);
-        atc << mode;
-        atc.send();
+        atc.send_assign(CMGF, mode);
         atc.check_for_ok();
     }
 
     static void show_sms_text_mode_parameters(ATC atc, bool show = true)
     {
-        atc.do_assign("+CSDH");
-        atc << (show ? '1' : '0');
-        atc.send();
+        atc.send_assign("+CSDH", show ? '1' : '0');
         atc.check_for_ok();
     }
 
     // Not ready yet
     static void recv_sms(ATC atc, uint8_t smsStorePos)
     {
-        atc.do_assign(CMGR);
-        atc << smsStorePos;
-        atc.send();
+        atc.send_assign(CMGR, smsStorePos);
         atc.recv_request_echo_prefix(CMGR);
     }
 
