@@ -4,3 +4,6 @@
 [submodule "ext/util.embedded"]
 	path = ext/util.embedded
 	url = git@github.com:malachib/util.embedded.git
+[submodule "ext/libusbpp"]
+	path = ext/libusbpp
+	url = https://github.com/JENETRIC/libusbpp.git
