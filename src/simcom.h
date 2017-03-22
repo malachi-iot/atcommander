@@ -24,6 +24,9 @@ class generic_at
 
     static constexpr char CIPMUX[] = "+CIPMUX";
     static constexpr char CIPMODE[] = "+CIPMODE";
+    static constexpr char CMGF[] = "+CMGF";
+    static constexpr char CMGR[] = "+CMGR"; // receive SMS
+    static constexpr char CMGS[] = "+CMGR"; // send SMS
 
     typedef lwstd::ostream ostream;
     typedef lwstd::istream istream;
@@ -58,6 +61,39 @@ public:
         atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << lwstd::endl;
         atc.check_for_ok();
         // cin >> "OK"
+    }
+
+
+    // mode '1' = text, '0' = pdu
+    static void set_sms_format(ATC atc, char mode)
+    {
+        atc.do_assign(CMGF);
+        atc << mode;
+        atc.send();
+        atc.check_for_ok();
+    }
+
+    static void show_sms_text_mode_parameters(ATC atc, bool show = true)
+    {
+        atc.do_assign("+CSDH");
+        atc << (show ? '1' : '0');
+        atc.send();
+        atc.check_for_ok();
+    }
+
+    // Not ready yet
+    static void recv_sms(ATC atc, uint8_t smsStorePos)
+    {
+        atc.do_assign(CMGR);
+        atc << smsStorePos;
+        atc.send();
+        atc.recv_request_echo_prefix(CMGR);
+    }
+
+
+    static void send_sms(ATC atc)
+    {
+        atc.do_assign(CMGS);
     }
 };
 }

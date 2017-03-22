@@ -226,6 +226,24 @@ public:
     // sends a "request command" and parses the prefix
     // part of its response
     void do_request_prefix(const char* cmd);
+
+    // do a basic command with no parameters
+    // no ENDL is sent
+    void do_command(const char* cmd)
+    {
+        cout.write(AT, 2);
+        cout << cmd;
+    }
+
+    // a "assign" is an "ATxxxx=" command
+    // parameters are handled by << operator
+    // no ENDL is sent
+    void do_assign(const char* cmd)
+    {
+        do_command(cmd);
+        cout.put('=');
+    }
+
 };
 
 /*
