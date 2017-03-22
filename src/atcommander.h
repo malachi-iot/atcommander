@@ -250,7 +250,8 @@ public:
 
     // do a basic command with no parameters
     // no ENDL is sent
-    void do_command(const char* cmd)
+    template <typename TCmd>
+    void do_command(TCmd cmd)
     {
         cout.write(AT, 2);
         cout << cmd;
@@ -268,6 +269,14 @@ public:
         const int size = sizeof...(args);
 
         do_assign(cmd);
+        _send(args...);
+        send();
+    }
+
+    template <class TCmd, class ...TArgs>
+    void send_command(TCmd cmd, TArgs...args)
+    {
+        do_command(cmd);
         _send(args...);
         send();
     }
