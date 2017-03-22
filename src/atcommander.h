@@ -108,6 +108,12 @@ public:
         return is_match(c, delimiters);
     }
 
+    bool input_match(char match)
+    {
+        int ch = get();
+        return ch == match;
+    }
+
     bool input_match(const char* match)
     {
         char ch;
@@ -179,7 +185,7 @@ public:
     } */
 
     template <typename T>
-    ATCommander& operator<<(T& outputValue)
+    ATCommander& operator<<(T outputValue)
     {
         cout << outputValue;
         return *this;
@@ -199,6 +205,27 @@ public:
     bool check_for_ok();
 
     void send() { cout << fstd::endl; }
+
+    // "request command" is an "ATxxxx?" with an "ATxxxx: " response
+    // send a request command and parse response up until
+    // non-echo portion
+    void send_request(const char* cmd)
+    {
+        cout << AT << cmd << '?' << fstd::endl;
+    }
+
+    void recv_request_echo_prefix(const char *cmd)
+    {
+        ignore_whitespace_and_newlines();
+
+        input_match(cmd);
+        input_match(": ");
+    }
+
+
+    // sends a "request command" and parses the prefix
+    // part of its response
+    void do_request_prefix(const char* cmd);
 };
 
 /*
@@ -217,12 +244,28 @@ inline ATCommander& operator >>(ATCommander& atc, const char* value)
 template <typename T>
 inline ATCommander& operator >>(ATCommander& atc, T value);
 
+template <>
 inline ATCommander& operator >>(ATCommander& atc, char& value)
 {
     value = atc.get();
     return atc;
 }
 
+template <>
+inline ATCommander& operator >>(ATCommander& atc, const char value)
+{
+    atc.input_match(value);
+    return atc;
+}
+
+
+//template <>
+inline ATCommander& operator >>(ATCommander& atc, uint8_t& value)
+{
+    return atc;
+}
+
+//template <>
 inline ATCommander& operator >>(ATCommander& atc, float& value)
 {
     atc.input(value);

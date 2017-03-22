@@ -118,5 +118,9 @@ bool ATCommander::input(const char*& input)
     return false;
 } */
 
-
+void ATCommander::do_request_prefix(const char *cmd)
+{
+    send_request(cmd);
+    recv_request_echo_prefix(cmd);
+}
 
