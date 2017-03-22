@@ -27,6 +27,14 @@ class generic_at
     static constexpr char CMGF[] = "+CMGF";
     static constexpr char CMGR[] = "+CMGR"; // receive SMS
     static constexpr char CMGS[] = "+CMGR"; // send SMS
+    static constexpr char CIPRXGET[] = "+CIPRXGET";
+    static constexpr char CIPSEND[] = "+CIPSEND";
+    static constexpr char CIPSTART[] = "+CIPSTART";
+    static constexpr char CIPSTATUS[] = "+CIPSTATUS";
+    static constexpr char CIPCLOSE[] = "+CIPCLOSE";
+    static constexpr char CIPSHUT[] = "+CIPSHUT";
+
+    static constexpr char CDNSGIP[] = "+CDNSGIP"; // IP lookup of a given domain name
 
     typedef lwstd::ostream ostream;
     typedef lwstd::istream istream;
