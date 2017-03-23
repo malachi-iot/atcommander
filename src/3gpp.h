@@ -18,6 +18,7 @@ namespace _3gpp
 
 class _27007
 {
+    typedef ATCommander& ATC;
     typedef lwstd::ostream ostream;
     typedef lwstd::istream istream;
 
@@ -27,6 +28,35 @@ class _27007
     static constexpr char CREG[] = "+CREG";
 
 public:
+    struct registration
+    {
+        static constexpr char CMD[] = "+CGATT";
+
+        struct _assign : public ATCommander::assign_base<registration>
+        {
+            static void suffix(ATC atc, bool attach)
+            {
+                atc.cout << (attach ? '1' : '0');
+            }
+        };
+
+        struct _status : public ATCommander::status_base<registration>
+        {
+            static bool response_suffix(ATC atc)
+            {
+                char level;
+
+                atc.input(level);
+
+                return level == '1';
+            }
+        };
+
+        typedef ATCommander::command_helper<_assign> command;
+        typedef ATCommander::status_helper<_status> status;
+        typedef ATCommander::status_helper_autoresponse<registration, char> status_char;
+    };
+
     static void ps_attach(ATCommander& atc, bool attach)
     {
         atc << "AT";
@@ -53,6 +83,11 @@ public:
     {
         char level;
 
+        registration::status::request(atc);
+        //registration::status::response(atc);
+        level = registration::status_char::response(atc);
+
+        /*
         atc << atc.AT;
         atc << CGATT;
         atc.cout << '?';
@@ -65,7 +100,7 @@ public:
 
         atc.check_for_ok();
 
-        // look for +CGATT: <state> \r\n OK
+        // look for +CGATT: <state> \r\n OK */
         return level == '1';
     }
 

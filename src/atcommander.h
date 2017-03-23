@@ -84,6 +84,28 @@ public:
             _command_base::prefix(atc, TProvider::CMD);
             atc.cout.put('?');
         }
+
+        static void response_prefix(ATCommander& atc)
+        {
+            atc.input_match(TProvider::CMD);
+            atc.input_match(": ");
+        }
+
+        static void response_suffix(ATCommander& atc) {}
+    };
+
+
+    template <class TProvider, typename TResponse>
+    struct status_base_autoresponse : public status_base<TProvider>
+    {
+        static TResponse response_suffix(ATCommander& atc)
+        {
+            TResponse input;
+
+            atc.input(input);
+
+            return input;
+        }
     };
 
 
@@ -95,6 +117,15 @@ public:
             TStatus::prefix(atc);
             atc.send();
         }
+
+        //  = decltype(TStatus::response_suffix)
+        static auto response(ATCommander& atc) -> decltype(TStatus::response_suffix(atc))
+        {
+            TStatus::response_prefix(atc);
+            auto returnValue = TStatus::response_suffix(atc);
+            atc.check_for_ok();
+            return returnValue;
+        }
     };
 
     template <class TProvider>
@@ -102,6 +133,11 @@ public:
     {
 
     };
+
+
+    template <class TProvider, class TResponse>
+    struct status_helper_autoresponse :
+            public status_helper<status_base_autoresponse<TProvider, TResponse>> {};
 
 
     template <class TProvider>
