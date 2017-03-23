@@ -12,5 +12,6 @@ TEST_CASE( "Simple hayes commands", "[hayes]" )
         char infobuffer[128];
 
         hayes::standard_at::information(atc, 0, infobuffer, 128);
+        hayes::standard_at::information::status::request(atc);
     }
 }

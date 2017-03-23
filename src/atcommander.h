@@ -86,6 +86,53 @@ public:
         }
     };
 
+
+    template <class TProvider>
+    struct status_base2 : ATCommander::status_base
+    {
+        static void prefix(ATCommander& atc)
+        {
+            ATCommander::status_base::prefix(atc, TProvider::CMD);
+        }
+    };
+
+
+    template <class TStatus>
+    struct status_helper
+    {
+        static void request(ATCommander& atc)
+        {
+            TStatus::prefix(atc);
+            atc.send();
+        }
+    };
+
+
+    template <class TProvider>
+    struct command_base2 : ATCommander::command_base
+    {
+        static void prefix(ATCommander& atc)
+        {
+            ATCommander::command_base::prefix(atc, TProvider::CMD);
+        }
+    };
+
+
+    template <class TCommand>
+    struct command_helper
+    {
+        template <class ...TArgs>
+        static void request(ATCommander& atc, TArgs...args)
+        {
+            TCommand::prefix(atc);
+            TCommand::suffix(atc, args...);
+            atc.send();
+        }
+    };
+
+
+
+
     /*
     template <const char* CMD>
     struct assign_base : command_base<CMD>
