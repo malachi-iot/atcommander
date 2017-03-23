@@ -13,11 +13,9 @@ static void blinky(void) {
     //printf("LED = %d \r\n",led.read());
 }
 
-
 BufferedSoftSerial serial(PA_10, PB_3);
 Serial usb(USBTX, USBRX);
 
-/*
 static void echo()
 {
     for(;;)
@@ -39,7 +37,18 @@ static void echo()
         }
     }
 }
-*/
+
+
+namespace FactUtilEmbedded { namespace std {
+
+ostream cout(usb);
+istream cin(usb);
+ostream& clog = cout;
+
+}}
+
+using namespace FactUtilEmbedded::std;
+
 
 int main()
 {
@@ -47,11 +56,11 @@ int main()
 
     EventQueue queue;
 
-    printf("Compiled at: " __TIME__ "\r\n");
+    clog << "Compiled at " __TIME__ "\r\n";
 
     serial.baud(9600);
 
-    //echoThread.start(echo);
+    echoThread.start(echo);
 
     queue.call_every(1000, blinky);
 
