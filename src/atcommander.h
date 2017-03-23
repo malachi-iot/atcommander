@@ -16,6 +16,8 @@ namespace fstd = FactUtilEmbedded::std;
 #endif
 
 
+#include "fact/string.h"
+
 #define DEBUG
 // FIX: really should splice in a different istream
 #define DEBUG_SIMULATED
@@ -58,6 +60,53 @@ protected:
 
 
 public:
+    struct command_base
+    {
+        template <typename T, size_t N>
+        static void prefix(ATCommander& atc, T (&s)[N])
+        {
+            atc.cout.write(AT, 2);
+            atc.cout.write(s, N - 1);
+        }
+
+        static void prefix(ATCommander& atc, char c)
+        {
+            atc.cout.write(AT, 2);
+            atc.cout.put(c);
+        }
+    };
+
+    struct status_base : command_base
+    {
+        template <typename T>
+        static void prefix(ATCommander& atc, T s)
+        {
+            command_base::prefix(atc, s);
+            atc.cout.put('?');
+        }
+    };
+
+    /*
+    template <const char* CMD>
+    struct assign_base : command_base<CMD>
+    {
+        static void prefix(ATCommander& atc)
+        {
+            command_base<CMD>::prefix(atc);
+            atc.cout.put('=');
+        }
+    };
+
+    template <const char* CMD>
+    struct status_base : command_base<CMD>
+    {
+        static void prefix(ATCommander& atc)
+        {
+            command_base<CMD>::prefix(atc);
+            atc.cout.put('?');
+        }
+    }; */
+
 #ifdef DEBUG_SIMULATED
     FactUtilEmbedded::layer1::CircularBuffer<char, 128> debugBuffer;
 #endif
