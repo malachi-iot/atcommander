@@ -4,6 +4,8 @@
 #include <BufferedSoftSerial.h>
 
 #include <fact/iostream.h>
+// TODO: consider moving these includes into an atcommander folder
+#include "hayes.h"
 
 #define MAL_LED LED1
 
@@ -49,6 +51,8 @@ ostream& clog = cout;
 
 using namespace FactUtilEmbedded::std;
 
+ostream ocserial(serial);
+istream icserial(serial);
 
 int main()
 {
@@ -63,6 +67,12 @@ int main()
     echoThread.start(echo);
 
     queue.call_every(1000, blinky);
+
+    ATCommander atc(icserial, ocserial);
+
+    char buf[128];
+
+    hayes::standard_at::information(atc, 0, buf, 128);
 
     queue.dispatch();
 }
