@@ -101,6 +101,21 @@ public:
     }
 
 
+    fstd::streamsize getline(char* s, fstd::streamsize max, const char terminator = '\n')
+    {
+#ifdef DEBUG_SIMULATED
+        int ch;
+        fstd::streamsize len = 0;
+
+        while((s[len++] = ch = get()) != terminator && ch != -1);
+
+        return len;
+#else
+        return cin.getline(s, max, terminator);
+#endif
+    }
+
+
     void unget(char ch)
     {
 #ifdef DEBUG_SIMULATED_BROKEN

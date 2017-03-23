@@ -14,12 +14,7 @@ public:
     {
         atc.send_command('I', level);
         atc.ignore_whitespace_and_newlines();
-#ifdef DEBUG_SIMULATED
-        int ch;
-        while((*s = ch = atc.get()) != '\n' && ch != -1);
-#else
-        atc.cin.getline(s, smax);
-#endif
+        atc.getline(s, smax);
         atc.check_for_ok();
     }
 
