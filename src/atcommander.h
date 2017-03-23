@@ -60,7 +60,7 @@ protected:
 
 
 public:
-    struct command_base
+    struct _command_base
     {
         template <typename T, size_t N>
         static void prefix(ATCommander& atc, T (&s)[N])
@@ -76,23 +76,13 @@ public:
         }
     };
 
-    struct status_base : command_base
-    {
-        template <typename T>
-        static void prefix(ATCommander& atc, T s)
-        {
-            command_base::prefix(atc, s);
-            atc.cout.put('?');
-        }
-    };
-
-
     template <class TProvider>
-    struct status_base2 : ATCommander::status_base
+    struct status_base : _command_base
     {
         static void prefix(ATCommander& atc)
         {
-            ATCommander::status_base::prefix(atc, TProvider::CMD);
+            _command_base::prefix(atc, TProvider::CMD);
+            atc.cout.put('?');
         }
     };
 
@@ -107,13 +97,30 @@ public:
         }
     };
 
+    template <class TProvider>
+    struct status_helper2 : status_helper<status_base<TProvider>>
+    {
+
+    };
+
 
     template <class TProvider>
-    struct command_base2 : ATCommander::command_base
+    struct command_base : _command_base
     {
         static void prefix(ATCommander& atc)
         {
-            ATCommander::command_base::prefix(atc, TProvider::CMD);
+            _command_base::prefix(atc, TProvider::CMD);
+        }
+    };
+
+
+    template <class TProvider>
+    struct assign_base : _command_base
+    {
+        static void prefix(ATCommander& atc)
+        {
+            _command_base::prefix(atc, TProvider::CMD);
+            atc.cout.put('=');
         }
     };
 
