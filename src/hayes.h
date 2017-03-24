@@ -12,30 +12,6 @@ class standard_at
 
 public:
 
-    /*
-    class information;
-    class information::_command;
-
-    template <class TProvider>
-    struct _helper
-    {
-        typedef ATCommander::command_helper<TProvider::_command> command;
-        typedef ATCommander::status_helper2<TProvider> status;
-    };
-
-    struct information : _helper<information>
-    {
-        static constexpr char CMD = 'I';
-
-        struct _command : public ATCommander::command_base<information> //<I>
-        {
-            static void suffix(ATC atc, uint8_t level)
-            {
-                atc << level;
-            }
-        };
-    }; */
-
     struct information
     {
         static constexpr char CMD = 'I';
@@ -59,12 +35,7 @@ public:
         atc.check_for_ok();
     }
 
-
-    static void reset(ATC atc)
-    {
-        atc.send_command('Z');
-        atc.check_for_ok();
-    }
+    typedef ATBuilder::one_shot<'Z'> reset;
 };
 
 }

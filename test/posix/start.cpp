@@ -26,6 +26,7 @@ void _deducer(void (*_func)(ATCommander&, TArgs...))
 
 }
 
+/*
 template <class ...TArgs>
 //auto
 typename ATCommander::command_helper2<FakeCommand, TArgs...>
@@ -40,6 +41,7 @@ typename ATCommander::command_helper2<FakeCommand, TArgs...>
     //return (temp1*) nullptr;
     //return declval(ATCommander::command_helper2<FakeCommand, TArgs...>);
 }
+*/
 
 TEST_CASE( "Make sure catch.hpp is running", "[meta]" )
 {
@@ -47,6 +49,7 @@ TEST_CASE( "Make sure catch.hpp is running", "[meta]" )
 
     ATCommander atc(fstd::cin, fstd::cout);
 
+    /*
     //_deducer(fake_request_suffix);
     auto value = deducer(fake_request_suffix);
     //value->helper3<fake_request_suffix>::request(atc, 5);
@@ -54,6 +57,6 @@ TEST_CASE( "Make sure catch.hpp is running", "[meta]" )
     decltype(value)::helper3<fake_request_suffix>::request(atc, 5);
     //test2::request(atc, 5);
     //decltype(deducer(fake_request_suffix)) deduced;
-    ATCommander::command_helper2<FakeCommand, int>::helper3<fake_request_suffix>::request(atc, 3);
+    ATCommander::command_helper2<FakeCommand, int>::helper3<fake_request_suffix>::request(atc, 3); */
     //ATCommander::command_helper2 val(1, 2, 3);
 }

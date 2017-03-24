@@ -28,11 +28,12 @@ class _27007
     static constexpr char CREG[] = "+CREG";
 
 public:
-    struct registration
+    // packet service attach
+    struct attach
     {
         static constexpr char CMD[] = "+CGATT";
 
-        struct _assign : public ATCommander::assign_base<registration>
+        struct _assign
         {
             static void suffix(ATC atc, bool attach)
             {
@@ -52,66 +53,35 @@ public:
             }
         };
 
-        typedef ATCommander::command_helper<_assign> command;
-        //typedef ATCommander::status_helper<_status> status;
-        typedef ATBuilder::status<registration, _status> status;
-        typedef ATBuilder::status_auto<registration, char> status_char;
-        //typedef ATCommander::status_helper_autoresponse<registration, char> status_char;
-        //typedef ATCommander::command_helper2<registration, _assign::suffix> command2;
+        typedef ATBuilder::assign<attach, _assign> command;
+        typedef ATBuilder::status<attach, _status> status;
+        typedef ATBuilder::status_auto<attach, char> status_char;
     };
 
-    static void ps_attach(ATCommander& atc, bool attach)
+    struct registration
     {
-        registration::command::request(atc, attach);
-        registration::command::response(atc);
-    }
+        static constexpr char CMD[] = "+CREG";
 
+        static bool response_suffix(ATC atc, uint8_t& n, uint8_t& stat)
+        {
+            char _n;
 
-    static void report_mobile_equipment_error(ATCommander& atc, uint8_t level)
-    {
-        atc << "AT";
-        atc << "CMEE=" << level;
-        atc.cout << lwstd::endl;
+            atc >> _n >> ',' >> stat;
 
-        atc.check_for_ok();
+            n = _n - '0';
+        }
+
+        typedef ATBuilder::status<registration> status;
     };
 
-    //static void echo_query(ATCommander& atc
 
-    static bool is_ps_attached(ATCommander& atc)
+    // set report level status
+    struct mobile_equipment_error
     {
-        char level;
+        static constexpr char CMD[] = "CMEE";
 
-        registration::status::request(atc);
-        //registration::status::response(atc);
-        level = registration::status_char::response(atc);
-
-        /*
-        atc << atc.AT;
-        atc << CGATT;
-        atc.cout << '?';
-
-        atc.send();
-
-        atc.input_match(CGATT);
-        atc.input_match(": ");
-        atc.input(level);
-
-        atc.check_for_ok();
-
-        // look for +CGATT: <state> \r\n OK */
-        return level == '1';
-    }
-
-    static void get_registration(ATCommander& atc, uint8_t& n, uint8_t& stat)
-    {
-        char _n;
-
-        atc.do_request_prefix(CREG);
-        atc >> _n >> ',' >> stat;
-
-        n = _n - '0';
-    }
+        typedef ATBuilder::assign_auto<mobile_equipment_error, uint8_t> command;
+    };
 };
 
 }

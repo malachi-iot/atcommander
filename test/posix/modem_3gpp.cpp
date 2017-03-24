@@ -17,21 +17,25 @@ TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
 
     GIVEN("misc")
     {
-        _27007::is_ps_attached(atc);
         generic_at::set_ipmux(atc, false);
         generic_at::get_ipmux(atc);
     }
 
+    GIVEN("mobile reporting adjustment")
+    {
+        atc.command<_27007::mobile_equipment_error>(1);
+    }
+
     GIVEN("network attach")
     {
-        _27007::ps_attach(atc, true);
+        atc.command<_27007::attach>(true);
     }
     GIVEN("registration status")
     {
         uint8_t n;
         uint8_t stat;
 
-        atc.status<_27007::registration>();
+        atc.status<_27007::registration>(n, stat);
         //_27007::get_registration(atc, n, stat);
     }
     GIVEN("")

@@ -18,11 +18,38 @@ protected:
         }
     };
 
+    template <class ...TArgs>
+    struct command_helper_autorequest
+    {
+
+        static void suffix(ATCommander& atc, TArgs...args)
+        {
+            atc._send(args...);
+        }
+
+    };
+
+
+    struct _command_base
+    {
+        template <typename T, size_t N>
+        static void prefix(ATCommander& atc, T (&s)[N])
+        {
+            atc.cout.write(ATCommander::AT, 2);
+            atc.cout.write(s, N - 1);
+        }
+
+        static void prefix(ATCommander& atc, char c)
+        {
+            atc.cout.write(ATCommander::AT, 2);
+            atc.cout.put(c);
+        }
+    };
 
 public:
     //typedef ATCommander::_command_base command_base;
     template <class TProvider, class TMethodProvider = TProvider>
-    struct command : ATCommander::_command_base
+    struct command : _command_base
     {
         static void prefix(ATCommander& atc)
         {
@@ -95,8 +122,21 @@ public:
     };
 
 
+    template <class TProvider, class ...TArgs>
+    struct command_auto : public command<TProvider, command_helper_autorequest<TArgs...>> {};
+
+
+    template <const char cmd, class ...TArgs>
+    struct one_shot
+    {
+        static constexpr char CMD = cmd;
+
+        typedef command_auto<one_shot<cmd, TArgs...>> command;
+    };
+
+
     template <class TProvider, class TMethodProvider = TProvider>
-    struct assign_base : command<TProvider, TMethodProvider>
+    struct assign : command<TProvider, TMethodProvider>
     {
         template <class ...TArgs>
         static void request(ATCommander& atc, TArgs...args)
@@ -115,8 +155,12 @@ public:
         }
     };
 
+
+    template <class TProvider, class TAssignParameter>
+    struct assign_auto : assign<TProvider, command_helper_autorequest<TAssignParameter>> {};
+
     template <class TProvider, class TMethodProvider = TProvider>
-    struct status : ATCommander::_command_base
+    struct status : _command_base
     {
         static void request(ATCommander& atc)
         {

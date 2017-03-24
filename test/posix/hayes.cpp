@@ -19,4 +19,8 @@ TEST_CASE( "Simple hayes commands", "[hayes]" )
 
         atc.command<hayes::standard_at::information2>(1);
     }
+    GIVEN("Reset")
+    {
+        atc.command<hayes::standard_at::reset>();
+    }
 }
