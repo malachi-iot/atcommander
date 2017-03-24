@@ -20,29 +20,6 @@ static void blinky(void) {
 BufferedSoftSerial serial(PA_10, PB_3);
 Serial usb(USBTX, USBRX);
 
-static void echo()
-{
-    for(;;)
-    {
-        if(serial.readable())
-        {
-            int c = serial.getc();
-            usb.putc(c);
-        }
-        else if(usb.readable())
-        {
-            int c = usb.getc();
-            serial.putc(c);
-        }
-        else
-        {
-            // 10 ms
-            Thread::wait(10);
-        }
-    }
-}
-
-
 namespace FactUtilEmbedded { namespace std {
 
 ostream cout(usb);
@@ -53,8 +30,22 @@ ostream& clog = cout;
 
 using namespace FactUtilEmbedded::std;
 
+streamsize bufferedsoftserial_is_avail(void* ctx)
+{
+    return ((BufferedSoftSerial*)ctx)->readable();
+}
+
+int bufferedsoftserial_getc(void* ctx)
+{
+    auto stream = (BufferedSoftSerial*)ctx;
+
+    while(!stream->readable()) { Thread::wait(10); }
+
+    return stream->getc();
+}
+
 ostream ocserial(serial);
-istream icserial(serial);
+istream icserial(serial, bufferedsoftserial_is_avail, bufferedsoftserial_getc);
 
 static void echo2()
 {
@@ -67,14 +58,9 @@ static void echo2()
             cout << "Heartbeat: " << counter << "\r\n";
         }
 
-        // cuz SoftSerial "readable" isn't the same as Serial "readable" (fantastic then!)
-        if(serial.readable())
-        //if(icserial.rdbuf()->in_avail())
+        if(icserial.rdbuf()->in_avail())
         {
-            // unsure why icserial.get doesn't work though, it should still route
-            // through stream interface
-            //int c = icserial.get();
-            int c = serial.getc();
+            int c = icserial.get();
             cout.put(c);
         }
         else if(cin.rdbuf()->in_avail())
@@ -103,13 +89,26 @@ int main()
 
     serial.baud(9600);
 
-    echoThread.start(echo2);
+    //echoThread.start(echo2);
 
     queue.call_every(1000, blinky);
 
     ATCommander atc(icserial, ocserial);
 
     char buf[128];
+
+    atc << "ATI";
+    atc.send();
+
+    for(;;)
+    {
+        atc.getline(buf, 128);
+
+        clog << "Got result: " << buf << "\r\n";
+        Thread::wait(5000);
+    }
+
+    //atc.command<hayes::standard_at::reset>();
 
     //hayes::standard_at::information(atc, 0, buf, 128);
 

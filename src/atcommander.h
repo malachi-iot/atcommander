@@ -90,7 +90,12 @@ public:
     fstd::istream& cin;
     fstd::ostream& cout;
 
-    ATCommander(fstd::istream& cin, fstd::ostream& cout) : cin(cin), cout(cout) {}
+    ATCommander(fstd::istream& cin, fstd::ostream& cout) : cin(cin), cout(cout)
+    {
+#ifdef DEBUG_ATC_ECHO
+        fstd::clog << "ATCommander: Full echo mode" << fstd::endl;
+#endif
+    }
 
 
     void set_delimiter(const char* delimiters)
