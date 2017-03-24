@@ -22,7 +22,11 @@ TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
         generic_at::get_ipmux(atc);
     }
 
-    GIVEN("registration request")
+    GIVEN("network attach")
+    {
+        _27007::ps_attach(atc, true);
+    }
+    GIVEN("registration status")
     {
         uint8_t n;
         uint8_t stat;

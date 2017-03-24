@@ -9,8 +9,6 @@ class standard_at
 {
     typedef ATCommander& ATC;
 
-    static constexpr char I[] = "I";
-
 public:
 
     /*
@@ -51,13 +49,12 @@ public:
 
 
         typedef ATCommander::command_helper<_command> command;
-        typedef ATCommander::status_helper2<information> status;
     };
 
     static void information(ATC atc, uint8_t level, char* s, size_t smax)
     {
         information::command::request(atc, level);
-        atc.send_command('I', level);
+
         atc.ignore_whitespace_and_newlines();
         atc.getline(s, smax);
         atc.check_for_ok();

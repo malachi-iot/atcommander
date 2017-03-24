@@ -147,20 +147,29 @@ public:
         {
             _command_base::prefix(atc, TProvider::CMD);
         }
+
+        // Default response behavior is only to check for OK after a command
+        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
+        static bool response(ATCommander& atc)
+        {
+            return atc.check_for_ok();
+        }
     };
 
 
     template <class TProvider>
-    struct assign_base : _command_base
+    struct assign_base : command_base<TProvider>
     {
         static void prefix(ATCommander& atc)
         {
-            _command_base::prefix(atc, TProvider::CMD);
+            command_base<TProvider>::prefix(atc);
             atc.cout.put('=');
         }
     };
 
 
+    // the helpers automate all the "base-class-ish" functions like sending out the AT command, CRLF, etc.
+    // if we can combine with the _base classes, that would be awesome.  Right now, not sure how to do that
     template <class TCommand>
     struct command_helper
     {
@@ -170,6 +179,14 @@ public:
             TCommand::prefix(atc);
             TCommand::suffix(atc, args...);
             atc.send();
+        }
+
+        template <class ...TArgs>
+        static auto response(ATCommander& atc, TArgs...args) -> decltype(TCommand::response(atc, args...))
+        {
+            auto returnValue = TCommand::response(atc, args...);
+            //atc.check_for_ok();
+            return returnValue;
         }
     };
 
@@ -504,6 +521,8 @@ inline ATCommander& operator>>(ATCommander& atc, const char* matchValue)
     }
     return atc;
 }
+
+
 
 /*
 template <typename T>

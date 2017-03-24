@@ -24,7 +24,6 @@ class _27007
 
     //namespace std = FactUtilEmbedded::std;
 
-    static constexpr char CGATT[] = "+CGATT";
     static constexpr char CREG[] = "+CREG";
 
 public:
@@ -59,12 +58,8 @@ public:
 
     static void ps_attach(ATCommander& atc, bool attach)
     {
-        atc << "AT";
-        atc << "+CGATT";
-        atc.cout << (attach ? '1': '0');
-        atc.cout << lwstd::endl;
-
-        atc.check_for_ok();
+        registration::command::request(atc, attach);
+        registration::command::response(atc);
     }
 
 
