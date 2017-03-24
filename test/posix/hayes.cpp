@@ -15,6 +15,8 @@ TEST_CASE( "Simple hayes commands", "[hayes]" )
     }
     GIVEN("Info request 2")
     {
-        hayes::standard_at::information::command2::request(atc, 0);
+        uint8_t value;
+
+        atc.command<hayes::standard_at::information2>(1);
     }
 }

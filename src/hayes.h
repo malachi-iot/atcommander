@@ -1,6 +1,7 @@
 // TODO: find actual standard (like ... v.250 ?) which this likes to live in
 
 #include "atcommander.h"
+#include "atbuilder.h"
 
 namespace hayes
 {
@@ -39,7 +40,7 @@ public:
     {
         static constexpr char CMD = 'I';
 
-        struct _command : public ATCommander::command_base<information> //<I>
+        struct _command //: public ATCommander::command_base<information> //<I>
         {
             static void suffix(ATC atc, uint8_t level)
             {
@@ -48,9 +49,12 @@ public:
         };
 
 
-        typedef ATCommander::command_helper<_command> command;
-        typedef ATCommander::command_helper_autorequest<information, uint8_t> command2;
+        //typedef ATCommander::command_helper<_command> command;
+        //typedef ATCommander::command_helper_autorequest<information, uint8_t> command2;
+        typedef ATBuilder::command_base<information, _command> command;
     };
+
+    typedef information information2;
 
     static void information(ATC atc, uint8_t level, char* s, size_t smax)
     {

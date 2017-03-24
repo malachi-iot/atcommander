@@ -22,6 +22,9 @@ namespace fstd = FactUtilEmbedded::std;
 // FIX: really should splice in a different istream
 #define DEBUG_SIMULATED
 
+
+class ATBuilder;
+
 class ATCommander
 {
     static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
@@ -35,6 +38,8 @@ class ATCommander
 
     template <typename T>
     friend ATCommander& operator >>(ATCommander& atc, T);
+
+    friend class ATBuilder;
 
     // TODO: callback/event mechanism to fire when errors happen
 
@@ -513,6 +518,13 @@ public:
         do_command(cmd);
         _send(args...);
         send();
+    }
+
+    template <class TCmdClass, class ...TArgs>
+    void command(TArgs...args)
+    {
+        TCmdClass::command::request(*this, args...);
+        TCmdClass::command::response(*this);
     }
 };
 
