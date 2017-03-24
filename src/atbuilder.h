@@ -5,18 +5,24 @@
 class ATBuilder
 {
 protected:
-    struct _response_provider
+    template <typename TResponse>
+    struct status_helper_autoresponse
     {
-        void response(ATCommander& atc)
+        static TResponse response_suffix(ATCommander& atc)
         {
-            atc.check_for_ok();
+            TResponse input;
+
+            atc.input(input);
+
+            return input;
         }
     };
+
 
 public:
     //typedef ATCommander::_command_base command_base;
     template <class TProvider, class TMethodProvider = TProvider>
-    struct command_base : ATCommander::_command_base
+    struct command : ATCommander::_command_base
     {
         static void prefix(ATCommander& atc)
         {
@@ -89,27 +95,34 @@ public:
     };
 
 
-    template <class TProvider, typename TResponse>
-    struct status_base_autoresponse
+    template <class TProvider, class TMethodProvider = TProvider>
+    struct assign_base : command<TProvider, TMethodProvider>
     {
-        static TResponse response_suffix(ATCommander& atc)
+        template <class ...TArgs>
+        static void request(ATCommander& atc, TArgs...args)
         {
-            TResponse input;
+            command<TProvider>::prefix(atc);
+            atc.cout.put('=');
+            TMethodProvider::suffix(atc, args...);
+            atc.send();
+        }
 
-            atc.input(input);
-
-            return input;
+        template <class ...TArgs>
+        static void run(ATCommander& atc, TArgs...args)
+        {
+            request(atc, args...);
+            command<TProvider, TMethodProvider>::response(atc);
         }
     };
 
-
     template <class TProvider, class TMethodProvider = TProvider>
-    struct status_base : ATCommander::_command_base
+    struct status : ATCommander::_command_base
     {
-        static void prefix(ATCommander& atc)
+        static void request(ATCommander& atc)
         {
             _command_base::prefix(atc, TProvider::CMD);
             atc.cout.put('?');
+            atc.send();
         }
 
         static void response_prefix(ATCommander& atc)
@@ -127,7 +140,17 @@ public:
             auto returnValue = TMethodProvider::response_suffix(atc, args...);
             return returnValue;
         }
+
+        template <class ...TArgs>
+        static void run(ATCommander& atc, TArgs...args)
+        {
+            request(atc);
+            response(atc, args...);
+        }
     };
+
+    template <class TProvider, class TReturnType>
+    struct status_auto : public status<TProvider, status_helper_autoresponse<TReturnType>> {};
 
     /*
     template <char const &array[N], int N>

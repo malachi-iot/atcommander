@@ -6,6 +6,7 @@
 #define TEST_ATCOMMANDER_3GPP_H_H
 
 #include "atcommander.h"
+#include "atbuilder.h"
 #include <fact/iostream.h>
 
 namespace _3gpp
@@ -39,7 +40,7 @@ public:
             }
         };
 
-        struct _status : public ATCommander::status_base<registration>
+        struct _status
         {
             static bool response_suffix(ATC atc)
             {
@@ -52,8 +53,10 @@ public:
         };
 
         typedef ATCommander::command_helper<_assign> command;
-        typedef ATCommander::status_helper<_status> status;
-        typedef ATCommander::status_helper_autoresponse<registration, char> status_char;
+        //typedef ATCommander::status_helper<_status> status;
+        typedef ATBuilder::status<registration, _status> status;
+        typedef ATBuilder::status_auto<registration, char> status_char;
+        //typedef ATCommander::status_helper_autoresponse<registration, char> status_char;
         //typedef ATCommander::command_helper2<registration, _assign::suffix> command2;
     };
 

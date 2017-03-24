@@ -31,7 +31,8 @@ TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
         uint8_t n;
         uint8_t stat;
 
-        _27007::get_registration(atc, n, stat);
+        atc.status<_27007::registration>();
+        //_27007::get_registration(atc, n, stat);
     }
     GIVEN("")
     {

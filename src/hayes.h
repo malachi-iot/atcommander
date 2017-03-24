@@ -40,18 +40,12 @@ public:
     {
         static constexpr char CMD = 'I';
 
-        struct _command //: public ATCommander::command_base<information> //<I>
+        static void suffix(ATC atc, uint8_t level)
         {
-            static void suffix(ATC atc, uint8_t level)
-            {
-                atc << level;
-            }
-        };
+            atc << level;
+        }
 
-
-        //typedef ATCommander::command_helper<_command> command;
-        //typedef ATCommander::command_helper_autorequest<information, uint8_t> command2;
-        typedef ATBuilder::command_base<information, _command> command;
+        typedef ATBuilder::command<information> command;
     };
 
     typedef information information2;

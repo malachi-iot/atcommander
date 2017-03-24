@@ -526,6 +526,13 @@ public:
         TCmdClass::command::request(*this, args...);
         TCmdClass::command::response(*this);
     }
+
+    template <class TCmdClass>
+    auto status() -> decltype(TCmdClass::status::response(*this))
+    {
+        TCmdClass::status::request(*this);
+        return TCmdClass::status::response(*this);
+    }
 };
 
 /*
