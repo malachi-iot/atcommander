@@ -19,6 +19,8 @@ namespace fstd = FactUtilEmbedded::std;
 #include "fact/string.h"
 
 #define DEBUG
+#define DEBUG_ATC_INPUT
+#define DEBUG_ATC_OUTPUT
 // FIX: really should splice in a different istream
 #define DEBUG_SIMULATED
 
@@ -159,16 +161,26 @@ public:
     {
         char ch;
 
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "Match raw '" << match << "' = ";
+#endif
+
         while((ch = *match++))
         {
             char _ch = get();
             if(ch != _ch)
             {
                 unget(_ch);
+#ifdef DEBUG_ATC_INPUT
+                fstd::clog << "false" << fstd::endl;
+#endif
                 return false;
             }
         }
 
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "true" << fstd::endl;
+#endif
         return true;
     }
 
@@ -184,8 +196,7 @@ public:
         // TODO: disallow constants from coming in here
         //static_assert(T, "Cannot input into a static pointer");
 
-        //constexpr uint8_t
-        auto maxlen = experimental::maxStringLength<T>();
+        constexpr uint8_t maxlen = experimental::maxStringLength<T>();
         char buffer[maxlen];
 
         size_t n = input(buffer, maxlen);
@@ -200,6 +211,11 @@ public:
         if(n == 0) return false;
 #endif
         inputValue = fromString<T>(buffer);
+
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "Input raw = " << buffer << " / cooked = ";
+        fstd::clog << inputValue << fstd::endl;
+#endif
 
         return true;
     }

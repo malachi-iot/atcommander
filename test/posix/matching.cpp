@@ -35,7 +35,7 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
 
     REQUIRE(!atc.is_in_error());
 
-    GIVEN("")
+    GIVEN("String conversion")
     {
         float value;
         //atc.input(value);
