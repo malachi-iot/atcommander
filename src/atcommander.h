@@ -192,12 +192,34 @@ public:
     };
 
 
+    template <typename...TRest>
+    struct command_helper_builder
+    {
+        //using TFunc = (*void)(ATCommander&, TRest...);
+        typedef void (*TFunc)(ATCommander&, TRest...);
+    };
 
     //template <class TProvider, template <typename ... TRest> void (*request_suffix)(ATCommander&, ...)>
-    template <class TProvider, typename request_suffix>
+    template <class TProvider,
+              typename ... TRef>
     //template <class TProvider, template <typename ... TRest> void (&request_suffix)(ATCommander&)>
     struct command_helper2
     {
+        //command_helper2(TRef...dummy) {}
+
+        typename command_helper_builder<TRef...>::TFunc func;
+
+        template <typename command_helper_builder<TRef...>::TFunc _func>
+        struct helper3
+        {
+            static void request(ATCommander& atc, TRef...args)
+            {
+                command_base<TProvider>::prefix(atc);
+                _func(atc, args...);
+                atc.send();
+            }
+        };
+
         template <class ...TArgs>
         static void request(ATCommander& atc, TArgs...args)
         {
