@@ -49,6 +49,7 @@ public:
 
 
         typedef ATCommander::command_helper<_command> command;
+        typedef ATCommander::command_helper_autorequest<information, uint8_t> command2;
     };
 
     static void information(ATC atc, uint8_t level, char* s, size_t smax)

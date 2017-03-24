@@ -192,6 +192,25 @@ public:
     };
 
 
+    template <class TProvider, class ...TArgs>
+    struct command_base_autorequest : command_base<TProvider>
+    {
+
+        static void suffix(ATCommander& atc, TArgs...args)
+        {
+            atc._send(args...);
+        }
+
+    };
+
+    template <class TProvider, class ...TArgs>
+    struct command_helper_autorequest :
+            command_helper<command_base_autorequest<TProvider, TArgs...>>
+    {
+
+    };
+
+
     template <typename...TRest>
     struct command_helper_builder
     {
