@@ -35,14 +35,14 @@ protected:
         template <typename T, size_t N>
         static void prefix(ATCommander& atc, T (&s)[N])
         {
-            atc.cout.write(ATCommander::AT, 2);
-            atc.cout.write(s, N - 1);
+            atc.write(ATCommander::AT, 2);
+            atc.write(s, N - 1);
         }
 
         static void prefix(ATCommander& atc, char c)
         {
-            atc.cout.write(ATCommander::AT, 2);
-            atc.cout.put(c);
+            atc.write(ATCommander::AT, 2);
+            atc.put(c);
         }
     };
 

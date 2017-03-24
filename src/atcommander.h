@@ -3,11 +3,12 @@
 #include "experimental.h"
 #include "fact/CircularBuffer.h"
 #include <cstdlib>
-typedef const char* PGM_P;
 #include "fact/string_convert.h"
 #ifdef FEATURE_IOSTREAM
 #include <iostream>
 
+// FIX: still kludgey, need a mini-noduino.h
+typedef const char* PGM_P;
 namespace fstd = ::std;
 #else
 #include "fact/iostream.h"
@@ -20,7 +21,10 @@ namespace fstd = FactUtilEmbedded::std;
 
 #define DEBUG
 #define DEBUG_ATC_INPUT
-#define DEBUG_ATC_OUTPUT
+//#define DEBUG_ATC_OUTPUT
+#if defined(DEBUG_ATC_INPUT) and defined(DEBUG_ATC_OUTPUT)
+#define DEBUG_ATC_ECHO
+#endif
 // FIX: really should splice in a different istream
 #define DEBUG_SIMULATED
 
@@ -94,7 +98,7 @@ public:
         this->delimiters = delimiters;
     }
 
-    int get()
+    int _get()
     {
         if(is_cached())
         {
@@ -109,6 +113,17 @@ public:
         return cin.get();
 #endif
     }
+
+    int get()
+    {
+        int ch = _get();
+#ifdef DEBUG_ATC_ECHO
+        fstd::clog.put(ch);
+#endif
+        return ch;
+    }
+
+
 
 
     fstd::streamsize getline(char* s, fstd::streamsize max, const char terminator = '\n')
@@ -241,9 +256,31 @@ public:
         return *this;
     } */
 
+    void write(const char* s, fstd::streamsize len)
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog.write(s, len);
+#endif
+
+        cout.write(s, len);
+    }
+
+
+    void put(char ch)
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog.put(ch);
+#endif
+
+        cout.put(ch);
+    }
+
     template <typename T>
     ATCommander& operator<<(T outputValue)
     {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog << outputValue;
+#endif
         cout << outputValue;
         return *this;
     }
@@ -414,4 +451,3 @@ inline ATCommander& operator >>(ATCommander& atc, T& value)
     return atc;
 }
 */
-

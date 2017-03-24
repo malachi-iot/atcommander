@@ -64,7 +64,7 @@ int main()
 
     serial.baud(9600);
 
-    echoThread.start(echo);
+    //echoThread.start(echo);
 
     queue.call_every(1000, blinky);
 
