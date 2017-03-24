@@ -54,6 +54,7 @@ public:
         typedef ATCommander::command_helper<_assign> command;
         typedef ATCommander::status_helper<_status> status;
         typedef ATCommander::status_helper_autoresponse<registration, char> status_char;
+        //typedef ATCommander::command_helper2<registration, _assign::suffix> command2;
     };
 
     static void ps_attach(ATCommander& atc, bool attach)

@@ -181,6 +181,7 @@ public:
             atc.send();
         }
 
+        // TODO: be mindful, this might be a C++14 only feature
         template <class ...TArgs>
         static auto response(ATCommander& atc, TArgs...args) -> decltype(TCommand::response(atc, args...))
         {
@@ -191,6 +192,20 @@ public:
     };
 
 
+
+    //template <class TProvider, template <typename ... TRest> void (*request_suffix)(ATCommander&, ...)>
+    template <class TProvider, typename request_suffix>
+    //template <class TProvider, template <typename ... TRest> void (&request_suffix)(ATCommander&)>
+    struct command_helper2
+    {
+        template <class ...TArgs>
+        static void request(ATCommander& atc, TArgs...args)
+        {
+            command_base<TProvider>::prefix(atc);
+            request_suffix(atc, args...);
+            atc.send();
+        }
+    };
 
 
     /*
