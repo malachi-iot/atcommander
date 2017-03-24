@@ -20,13 +20,15 @@ namespace fstd = FactUtilEmbedded::std;
 #include "fact/string.h"
 
 #define DEBUG
+// NOTE: Need DEBUG_IOS_GETLINE on because we haven't put unget into our getline call fully yet
+#define DEBUG_IOS_GETLINE
 #define DEBUG_ATC_INPUT
 //#define DEBUG_ATC_OUTPUT
 #if defined(DEBUG_ATC_INPUT) and defined(DEBUG_ATC_OUTPUT)
 #define DEBUG_ATC_ECHO
 #endif
 // FIX: really should splice in a different istream
-#define DEBUG_SIMULATED
+//#define DEBUG_SIMULATED
 
 
 class ATBuilder;
@@ -131,23 +133,22 @@ public:
 
 
 
-    fstd::streamsize getline(char* s, fstd::streamsize max, const char terminator = '\n')
+    void getline(char* s, fstd::streamsize max, const char terminator = '\n')
     {
-#ifdef DEBUG_SIMULATED
+#if defined(DEBUG_SIMULATED) or defined(DEBUG_IOS_GETLINE)
         int ch;
         fstd::streamsize len = 0;
 
         while((s[len++] = ch = get()) != terminator && ch != -1);
 
-        return len;
+        //return len;
 #else
-        fstd::streamsize result = cin.getline(s, max, terminator);
+        cin.getline(s, max, terminator);
 
+        //return result;
+#endif
 #ifdef DEBUG_ATC_INPUT
         fstd::clog << "Getline: " << s << "\r\n";
-#endif
-
-        return result;
 #endif
     }
 

@@ -5,7 +5,7 @@
 
 #include <fact/iostream.h>
 
-#define DEBUG_ATC_OUTPUT
+//#define DEBUG_ATC_OUTPUT
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
 
@@ -89,28 +89,31 @@ int main()
 
     serial.baud(9600);
 
-    //echoThread.start(echo2);
-
     queue.call_every(1000, blinky);
 
     ATCommander atc(icserial, ocserial);
 
     char buf[128];
 
-    atc << "ATI";
+    atc << "ATZ";
     atc.send();
-
-    for(;;)
-    {
-        atc.getline(buf, 128);
-
-        clog << "Got result: " << buf << "\r\n";
-        Thread::wait(5000);
-    }
+    // dump buffers, because we're not sure what state things
+    // are in at this point
+    Thread::wait(500);
+    while(serial.readable())
+        serial.getc();
+        
+    atc << "ATE0";
+    atc.send();
+    atc.ignore_whitespace_and_newlines();
+    atc.input_match("ATE0");
+    atc.check_for_ok();
 
     //atc.command<hayes::standard_at::reset>();
 
-    //hayes::standard_at::information(atc, 0, buf, 128);
+    hayes::standard_at::information(atc, 0, buf, 128);
+
+    echoThread.start(echo2);
 
     queue.dispatch();
 }
