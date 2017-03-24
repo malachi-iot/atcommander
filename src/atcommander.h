@@ -136,7 +136,13 @@ public:
 
         return len;
 #else
-        return cin.getline(s, max, terminator);
+        fstd::streamsize result = cin.getline(s, max, terminator);
+
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "Getline: " << s << "\r\n";
+#endif
+
+        return result;
 #endif
     }
 
