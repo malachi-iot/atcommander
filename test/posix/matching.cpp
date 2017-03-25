@@ -21,6 +21,7 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
 
     ATCommander atc(fstd::cin, fstd::cout);
 
+#ifdef DEBUG_SIMULATED
     insert(atc.debugBuffer, buf);
     insert(atc.debugBuffer, "Testing 1 2 3");
 
@@ -43,4 +44,5 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
         REQUIRE(!atc.is_in_error());
         REQUIRE(value == 3.0f);
     }
+#endif
 }

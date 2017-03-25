@@ -5,6 +5,7 @@ project(test_atcommander)
 ADD_DEFINITIONS(-std=c++11)
 
 ADD_DEFINITIONS(-D__POSIX__)
+ADD_DEFINITIONS(-DDEBUG_SIMULATED)
 
 INCLUDE_DIRECTORIES(lib/Catch/include)
 INCLUDE_DIRECTORIES(lib/atcommander)
