@@ -97,16 +97,29 @@ int main()
 
     atc << "ATZ";
     atc.send();
+    const char ATZ[] = "ATZ";
+    const char* keywords_atz[] = { ATZ, "OK" };
+    atc.ignore_whitespace_and_newlines();
+    if(atc.input_match(keywords_atz) == ATZ)
+    {
+        clog << "Initialized (was in ATE1 mode)\r\n";
+        atc.check_for_ok();
+    }
+    /*
     // dump buffers, because we're not sure what state things
     // are in at this point
     Thread::wait(500);
     while(serial.readable())
-        serial.getc();
-        
-    atc << "ATE0";
+        serial.getc(); */
+
+    const char ATE0[] = "ATE0";
+    const char* keywords[] = { ATE0, "OK" };
+
+    atc << ATE0;
     atc.send();
     atc.ignore_whitespace_and_newlines();
-    atc.input_match("ATE0");
+    atc.input_match(ATE0);
+    atc.skip_newline();
     atc.check_for_ok();
 
     //atc.command<hayes::standard_at::reset>();

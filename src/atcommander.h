@@ -23,6 +23,8 @@ namespace fstd = FactUtilEmbedded::std;
 // NOTE: Need DEBUG_IOS_GETLINE on because we haven't put unget into our getline call fully yet
 #define DEBUG_IOS_GETLINE
 #define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_MATCH
+//#define DEBUG_ATC_UNGET
 //#define DEBUG_ATC_OUTPUT
 #if defined(DEBUG_ATC_INPUT) and defined(DEBUG_ATC_OUTPUT)
 #define DEBUG_ATC_ECHO
@@ -141,6 +143,9 @@ public:
     {
         if(is_cached())
         {
+#ifdef DEBUG_ATC_UNGET
+            fstd::clog << "Yanking from a previous unget: " << (int)cache << fstd::endl;
+#endif
             char temp = cache;
             cache = 0;
             return temp;
@@ -169,18 +174,22 @@ public:
     {
 #if defined(DEBUG_SIMULATED) or defined(DEBUG_IOS_GETLINE)
         int ch;
-        fstd::streamsize len = 0;
+        int len = 0;
 
-        while((s[len++] = ch = get()) != terminator && ch != -1);
+        while((ch = get()) != terminator && ch != -1)
+        {
+            // FIX: hacky also and will cause bugs for real getline usage
+            if(ch != 13) s[len++] = ch;
+        }
 
-        //return len;
+        s[len] = 0;
 #else
         cin.getline(s, max, terminator);
 
         //return result;
 #endif
 #ifdef DEBUG_ATC_INPUT
-        fstd::clog << "Getline: " << s << "\r\n";
+        fstd::clog << "Getline: '" << s << "' (terminated from character# " << ch << ")\r\n";
 #endif
     }
 
@@ -201,6 +210,10 @@ public:
 
         while((delim = *match++))
             if(delim == c) return true;
+
+#ifdef DEBUG_ATC_MATCH
+        fstd::clog << "Didn't match on char# " << (int) c << fstd::endl;
+#endif
 
         return false;
     }
@@ -244,9 +257,18 @@ public:
     }
 
 
-    const char* input_match(const char** matches)
+    // FIX: Right now hard-wired to full-line input matching
+    // FIX: Also preallocates big buffer for that
+    const char* input_match(const char** keywords)
     {
-        return nullptr;
+        char buf[128];
+
+        getline(buf, 128);
+
+#ifdef DEBUG_ATC_INPUT
+#endif
+
+        return layer3::MultiMatcher::do_match(buf, keywords);
     }
 
 
@@ -399,7 +421,7 @@ public:
     template <class ...TArgs>
     void send_assign(const char* cmd, TArgs...args)
     {
-        const int size = sizeof...(args);
+        //const int size = sizeof...(args);
 
         do_assign(cmd);
         _send(args...);
