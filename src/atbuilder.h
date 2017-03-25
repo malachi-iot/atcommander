@@ -18,6 +18,9 @@ protected:
         }
     };
 
+    /// builds out request automatically given template argument types for each parameter
+    /// NOTE: Only tested with one parameter so far
+    /// \tparam TArgs
     template <class ...TArgs>
     struct command_helper_autorequest
     {
@@ -27,6 +30,10 @@ protected:
             atc._send(args...);
         }
 
+        static void echo_suffix(ATCommander& atc, TArgs...args)
+        {
+            atc._match(args...);
+        }
     };
 
 
@@ -113,6 +120,18 @@ public:
             TMethodProvider::response(atc, args...);
         }
 
+        // TODO: be mindful, this might be a C++14 only feature
+        template <class ...TArgs>
+        //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
+        static void read_echo(ATCommander& atc, TArgs...args)
+        {
+            atc >> ATCommander::AT;
+            atc >> TProvider::CMD;
+            TMethodProvider::echo_suffix(atc, args...);
+            atc.input_newline();
+        }
+
+
         template <class ...TArgs>
         static void run(ATCommander& atc, TArgs...args)
         {
@@ -131,7 +150,7 @@ public:
     {
         static constexpr char CMD = cmd;
 
-        typedef command_auto<one_shot<cmd, TArgs...>> command;
+        typedef command_auto<one_shot<cmd, TArgs...>, TArgs...> command;
     };
 
 

@@ -93,8 +93,6 @@ int main()
 
     ATCommander atc(icserial, ocserial);
 
-    char buf[128];
-
     atc << "ATZ";
     atc.send();
     const char ATZ[] = "ATZ";
@@ -105,24 +103,14 @@ int main()
         clog << "Initialized (was in ATE1 mode)\r\n";
         atc.check_for_ok();
     }
-    /*
-    // dump buffers, because we're not sure what state things
-    // are in at this point
-    Thread::wait(500);
-    while(serial.readable())
-        serial.getc(); */
 
-    const char ATE0[] = "ATE0";
-    const char* keywords[] = { ATE0, "OK" };
-
-    atc << ATE0;
-    atc.send();
-    atc.ignore_whitespace_and_newlines();
-    atc.input_match(ATE0);
-    atc.skip_newline();
-    atc.check_for_ok();
+    hayes::standard_at::echo::command::request(atc, 0);
+    hayes::standard_at::echo::command::read_echo(atc, 0);
+    hayes::standard_at::echo::command::response(atc);
 
     //atc.command<hayes::standard_at::reset>();
+
+    char buf[128];
 
     hayes::standard_at::information(atc, 0, buf, 128);
 

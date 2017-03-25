@@ -106,6 +106,16 @@ protected:
     }
 
 
+    void _match() {}
+
+    template <class T, class ...TArgs>
+    void _match(T value, TArgs...args)
+    {
+        _input_match(value);
+        _match(args...);
+    }
+
+
 public:
 
 #ifdef DEBUG_SIMULATED
@@ -226,7 +236,11 @@ public:
     bool input_match(char match)
     {
         int ch = get();
-        return ch == match;
+        bool matched = ch == match;
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "Match raw '" << match << "' = " << (matched ? "true" : "false") << fstd::endl;
+#endif
+        return matched;
     }
 
     bool input_match(const char* match)
@@ -269,6 +283,18 @@ public:
 #endif
 
         return layer3::MultiMatcher::do_match(buf, keywords);
+    }
+
+
+    template <typename T>
+    bool _input_match(T match)
+    {
+        constexpr uint8_t size = experimental::maxStringLength<T>();
+        char buf[size + 1];
+
+        toString(buf, match);
+
+        return input_match(buf);
     }
 
 
@@ -366,6 +392,10 @@ public:
     void ignore_whitespace();
 
     bool skip_newline();
+
+    /// Read one character from input, expecting newline-ish characters
+    /// @return if newline-ish found, return true.  Otherwise, false
+    bool input_newline() { return skip_newline(); }
 
 
     bool check_for_ok();
@@ -485,8 +515,10 @@ inline ATCommander& operator >>(ATCommander& atc, const char value)
 //template <>
 inline ATCommander& operator >>(ATCommander& atc, uint8_t& value)
 {
+    atc.input(value);
     return atc;
 }
+
 
 //template <>
 inline ATCommander& operator >>(ATCommander& atc, float& value)
@@ -513,7 +545,15 @@ inline ATCommander& operator>>(ATCommander& atc, const char* matchValue)
     return atc;
 }
 
+/*
+template <>
+bool ATCommander::_input_match(uint8_t match)
+{
+    constexpr uint8_t size = experimental::maxStringLength<uint8_t>();
+    char buf[size];
 
+    return input_match(match);
+}*/
 
 /*
 template <typename T>

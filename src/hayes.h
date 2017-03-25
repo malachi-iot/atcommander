@@ -12,6 +12,9 @@ class standard_at
 
 public:
 
+    typedef ATBuilder::one_shot<'Z'> reset;
+    typedef ATBuilder::one_shot<'E', uint8_t> echo;
+
     struct information
     {
         static constexpr char CMD = 'I';
@@ -19,6 +22,11 @@ public:
         static void suffix(ATC atc, uint8_t level)
         {
             atc << level;
+        }
+
+        static void echo_suffix(ATC atc, uint8_t level)
+        {
+            atc._input_match(level);
         }
 
         typedef ATBuilder::command<information> command;
@@ -34,8 +42,6 @@ public:
         atc.getline(s, smax);
         atc.check_for_ok();
     }
-
-    typedef ATBuilder::one_shot<'Z'> reset;
 };
 
 }

@@ -31,6 +31,8 @@ void ATCommander::ignore_whitespace()
     unget(ch);
 }
 
+
+// TODO: rename this to input_newline
 bool ATCommander::skip_newline()
 {
     // look for CRLF, LFCR, or LF alone.  CR alone not supported at this time

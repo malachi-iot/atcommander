@@ -3,6 +3,8 @@
 #include "3gpp.h"
 #include "simcom.h"
 
+#include "fact/string_convert.h"
+
 template <class TBuffer>
 void insert(TBuffer& buf, const char* s)
 {
@@ -56,7 +58,7 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
         REQUIRE(matched != buf3);
         REQUIRE(matched == buf_fred);
     }
-    GIVEN("Mult-match (char-parse)")
+    GIVEN("Multi-match (char-parse)")
     {
         char buf3[128] = "ZFred\n";
         int buf3_pos = 0;
@@ -68,5 +70,16 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
 
         REQUIRE(matched != buf3);
         REQUIRE(matched == buf_fred);
+    }
+    GIVEN("String conversion stuff")
+    {
+        uint8_t value = 77;
+        constexpr uint8_t size = experimental::maxStringLength<uint8_t>() + 1;
+        char buf[size];
+
+        toString(buf, value);
+
+        REQUIRE(buf[0] == '7');
+        REQUIRE(buf[1] == '7');
     }
 }
