@@ -131,3 +131,70 @@ void ATCommander::do_request_prefix(const char *cmd)
     recv_request_echo_prefix(cmd);
 }
 
+
+namespace layer3 {
+
+bool MultiMatcher::parse(char c)
+{
+    const char** _keyword = &keywords[vpos];
+    const char* keyword;
+
+    // If we still have keywords to inspect
+    while((keyword = *_keyword) != nullptr)
+    {
+        char ch = *(keyword + hpos);
+        // see if this particular keyword at this particular horizontal
+        // position IN the keyword matches incoming c
+        if(ch == c)
+        {
+            // If so, bump hpos up as we have a "so far" match and prep
+            // for the next one
+            hpos++;
+            return true;
+        }
+        else if(c == 13)
+        {
+            // FIX: eating CR for now, but we can do better (parse it out before we get here)
+            return true;
+        }
+            // TODO: make incoming terminator more configurable
+        else if(c == 10 && ch == 0)
+        {
+            // if we get here it means both incoming character and our own keyword
+            // are at their delimiters, meaning an exact match
+            match = true;
+            // and we're done
+            return false;
+        }
+
+        // if no match, then move forward (alphabetically)
+        // down the line
+        vpos++;
+        _keyword++;
+
+        if(hpos > 0)
+        {
+            bool sorted = false; // TODO: Feature needs more evaluation
+            if (sorted)
+            {
+                // NOTE: this is the line that makes alphabetical ordering important
+                // if we don't get a match, we compare the next line to see if the prefix
+                // at least matches so that we can then compare a suffix.  If prefix does
+                // NOT match, that means we are done - again, things must be alphabetical
+                // for that to work
+                if (memcmp(keyword, *_keyword, hpos) != 0) return false;
+            }
+            else
+            {
+                // didn't find a match so start hpos over again
+                // not so dissimilar from a memcmp
+                hpos = 0;
+            }
+        }
+    }
+
+    // if we get to the end, then definitely no match
+    return false;
+}
+
+}

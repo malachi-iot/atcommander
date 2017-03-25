@@ -31,6 +31,36 @@ namespace fstd = FactUtilEmbedded::std;
 //#define DEBUG_SIMULATED
 
 
+
+namespace layer3 {
+
+// TODO: revisit name of this class
+// NOTE: keywords must itself be NULL terminated.  This can be optimized by turning this into a layer-2
+// TODO: Add null-terminated arrays to fact.util.embedded buffer.h
+class MultiMatcher
+{
+    const char** keywords;
+    uint8_t hpos = 0, vpos = 0;
+    bool match = false;
+
+public:
+    MultiMatcher(const char** keywords) : keywords(keywords) {}
+
+    bool parse(char c);
+
+    void reset()
+    {
+        match = false;
+        hpos = 0;
+        vpos = 0;
+    }
+
+    bool is_matched() const { return match; };
+    const char* getMatchedKeyword() const { return keywords[vpos]; }
+};
+
+}
+
 class ATBuilder;
 
 class ATCommander
@@ -209,6 +239,12 @@ public:
         fstd::clog << "true" << fstd::endl;
 #endif
         return true;
+    }
+
+
+    const char* input_match(const char** matches)
+    {
+        return nullptr;
     }
 
 
@@ -463,3 +499,5 @@ inline ATCommander& operator >>(ATCommander& atc, T& value)
     return atc;
 }
 */
+
+
