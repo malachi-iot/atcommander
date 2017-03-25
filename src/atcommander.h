@@ -56,7 +56,9 @@ public:
     }
 
     bool is_matched() const { return match; };
-    const char* getMatchedKeyword() const { return keywords[vpos]; }
+    const char* matched() const { return keywords[vpos]; }
+
+    static const char* do_match(const char* input, const char** keywords);
 };
 
 }

@@ -134,6 +134,18 @@ void ATCommander::do_request_prefix(const char *cmd)
 
 namespace layer3 {
 
+const char* MultiMatcher::do_match(const char* input, const char** keywords)
+{
+    const char* keyword;
+
+    while((keyword = *keywords++))
+    {
+        if(strcmp(keyword, input) == 0) return keyword;
+    }
+
+    return nullptr;
+}
+
 bool MultiMatcher::parse(char c)
 {
     const char** _keyword = &keywords[vpos];
@@ -172,25 +184,13 @@ bool MultiMatcher::parse(char c)
         vpos++;
         _keyword++;
 
-        if(hpos > 0)
-        {
-            bool sorted = false; // TODO: Feature needs more evaluation
-            if (sorted)
-            {
-                // NOTE: this is the line that makes alphabetical ordering important
-                // if we don't get a match, we compare the next line to see if the prefix
-                // at least matches so that we can then compare a suffix.  If prefix does
-                // NOT match, that means we are done - again, things must be alphabetical
-                // for that to work
-                if (memcmp(keyword, *_keyword, hpos) != 0) return false;
-            }
-            else
-            {
-                // didn't find a match so start hpos over again
-                // not so dissimilar from a memcmp
-                hpos = 0;
-            }
-        }
+        // NOTE: this is what makes alphabetical ordering important
+        // if we don't get a match, we compare the current const match to the
+        // next potential const match to see if the prefix
+        // at least matches so that we can then compare a suffix.  If prefix does
+        // NOT match, that means we are done - again, things must be alphabetical
+        // for that to work
+        if (memcmp(keyword, *_keyword, hpos) != 0) return false;
     }
 
     // if we get to the end, then definitely no match
