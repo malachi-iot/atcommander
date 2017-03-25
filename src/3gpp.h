@@ -62,13 +62,15 @@ public:
     {
         static constexpr char CMD[] = "+CREG";
 
-        static bool response_suffix(ATC atc, uint8_t& n, uint8_t& stat)
+        static uint8_t response_suffix(ATC atc, uint8_t& n, uint8_t& stat)
         {
             char _n;
 
             atc >> _n >> ',' >> stat;
 
             n = _n - '0';
+
+            return n;
         }
 
         typedef ATBuilder::status<registration> status;
