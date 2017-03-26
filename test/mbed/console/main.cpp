@@ -55,10 +55,11 @@ static void echo2()
 
     for(;;)
     {
+        /*
         if(++counter % 1000 == 0)
         {
             cout << "Heartbeat: " << counter << "\r\n";
-        }
+        }*/
 
         if(icserial.rdbuf()->in_avail())
         {
@@ -72,8 +73,9 @@ static void echo2()
         }
         else
         {
+            Thread::yield();
             // 10 ms
-            Thread::wait(10);
+            //Thread::wait(10);
         }
     }
 }
@@ -134,14 +136,25 @@ int main()
     {
         // Then it's probably because http was already initialized, so ignore it
     }
-    atc.command<sim808::http_para>("CID", 1);
-    atc.command<sim808::http_para>("URL", "http://vis.lbl.gov/Research/acti/small/small.html");
-    sim808::http_action::command::request(atc, 0);
+
+    typedef sim808::http http;
+
+    atc.command<http::para>("CID", 1);
+    //atc.command<sim808::http_para>("URL", "http://vis.lbl.gov/Research/acti/small/small.html");
+    atc.command<http::para>("URL", "https://hooks.slack.com/services/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");
+    atc.command<http::para>("CONTENT", "application/json");
+    atc.command<http::ssl>(true);
+
+    char notify[128];
+    // TODO: optimize so we can do atc << commands here instead
+    sprintf(notify, "{\"text\": \"%s\"}", "ATCommander ONLINE");
+    //atc.command<sim808::http_data>("HELLO", 5, 5000);
+    atc.command<http::data>(notify);
+
+    http::action::command::request(atc, 1);
     uint16_t status_code;
     uint16_t datalen;
-    sim808::http_action::command::response(atc, status_code, datalen);
-
-    atc.command<sim808::http_data>("HELLO", 5, 5000);
+    http::action::command::response(atc, status_code, datalen);
 
     echoThread.start(echo2);
 

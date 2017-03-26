@@ -267,11 +267,16 @@ public:
     {
         static constexpr char CMD[] = "+HTTPDATA";
 
+        static void suffix(ATC atc, uint16_t size, uint32_t timeout_ms = 30000)
+        {
+            atc << size << ',' << timeout_ms;
+        }
+
         // NOTE: since this is an embedded environment,making size uint16_t
         // but we should revisit this
         static void suffix(ATC atc, const char* data, uint16_t size, uint32_t timeout_ms = 30000)
         {
-            atc << size << ',' << timeout_ms;
+            suffix(atc, size, timeout_ms);
 
             // FIX: send is part of below hack
             atc.send();
@@ -292,6 +297,12 @@ public:
             atc.write(data, size);
 
             // FIX: careful, because we're going to auto-send a newline afterthis
+        }
+
+
+        static void suffix(ATC atc, const char* data)
+        {
+            suffix(atc, data, strlen(data));
         }
 
         typedef ATBuilder::assign<http_data> command;
@@ -329,6 +340,8 @@ public:
         typedef http_ssl    ssl;
         typedef http_action action;
         typedef http_init   init;
+        typedef http_para   para;
+        typedef http_data   data;
     };
 
 
