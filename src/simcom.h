@@ -254,7 +254,8 @@ public:
     {
         static constexpr char CMD[] = "+HTTPPARA";
 
-        static void suffix(ATC atc, const char* tag, const char* value)
+        template <class T>
+        static void suffix(ATC atc, const char* tag, T value)
         {
             atc << '"' << tag << ANDTHEN << value << '"';
         }
