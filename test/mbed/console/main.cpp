@@ -5,10 +5,11 @@
 
 #include <fact/iostream.h>
 
-//#define DEBUG_ATC_OUTPUT
+#define DEBUG_ATC_OUTPUT
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
 #include "simcom.h"
+#include "3gpp.h"
 
 #define MAL_LED LED1
 
@@ -114,8 +115,13 @@ int main()
     hayes::v250::information::command::request(atc, 0);
     hayes::v250::information::command::response(atc, buf, 128);
 
-    //simcom::generic_at::http_init::command::request(atc);
-    //simcom::generic_at::http_init::command::response(atc);
+    // attach to network
+    atc.command<_3gpp::_27007::attach>(true);
+    // register on network
+    atc.command<_3gpp::_27007::registration>(1);
+    // bringup wireless connection to GPRS
+    //atc.command<simcom::generic_at::bringup_wireless>();
+    atc.command<simcom::generic_at::bearer_settings>(1, 1);
 
     atc.error.reset();
     atc.command<simcom::generic_at::http_init>();
@@ -123,11 +129,14 @@ int main()
     {
         // Then it's probably because http was already initialized, so ignore it
     }
+    atc.command<simcom::generic_at::http_para>("CID", "1");
     atc.command<simcom::generic_at::http_para>("URL", "http://vis.lbl.gov/Research/acti/small/small.html");
     simcom::generic_at::http_action::command::request(atc, 0);
     uint16_t status_code;
     uint16_t datalen;
     simcom::generic_at::http_action::command::response(atc, status_code, datalen);
+
+    atc.command<simcom::generic_at::http_data>("HELLO", 5, 5000);
 
     //atc.command<hayes::standard_at::information2>(0);
 

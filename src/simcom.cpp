@@ -36,4 +36,8 @@ constexpr char generic_at::http_head::CMD[];
 constexpr char generic_at::http_para::CMD[];
 constexpr char generic_at::http_init::CMD[];
 constexpr char generic_at::http_data::CMD[];
+
+constexpr char generic_at::bringup_wireless::CMD[];
+constexpr char generic_at::get_local_ip_address::CMD[];
+constexpr char generic_at::bearer_settings::CMD[];
 }

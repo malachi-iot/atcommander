@@ -22,7 +22,7 @@ namespace fstd = FactUtilEmbedded::std;
 #define DEBUG
 // NOTE: Need DEBUG_IOS_GETLINE on because we haven't put unget into our getline call fully yet
 #define DEBUG_IOS_GETLINE
-#define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_INPUT
 //#define DEBUG_ATC_MATCH
 //#define DEBUG_ATC_UNGET
 //#define DEBUG_ATC_OUTPUT
@@ -429,7 +429,13 @@ public:
 
     bool check_for_ok();
 
-    void send() { cout << fstd::endl; }
+    void send()
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog << fstd::endl;
+#endif
+        cout << fstd::endl;
+    }
 
     // "request command" is an "ATxxxx?" with an "ATxxxx: " response
     // send a request command and parse response up until

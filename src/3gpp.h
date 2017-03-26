@@ -11,21 +11,9 @@
 
 namespace _3gpp
 {
-#ifdef FEATURE_IOSTREAM
-    namespace lwstd = fstd;
-#else
-    namespace lwstd = FactUtilEmbedded::std;
-#endif
-
 class _27007
 {
     typedef ATCommander& ATC;
-    typedef lwstd::ostream ostream;
-    typedef lwstd::istream istream;
-
-    //namespace std = FactUtilEmbedded::std;
-
-    static constexpr char CREG[] = "+CREG";
 
 public:
     // packet service attach
@@ -37,7 +25,7 @@ public:
         {
             static void suffix(ATC atc, bool attach)
             {
-                atc.cout << (attach ? '1' : '0');
+                atc << (attach ? '1' : '0');
             }
         };
 
@@ -62,6 +50,15 @@ public:
     {
         static constexpr char CMD[] = "+CREG";
 
+        // mode 0 = unregistered
+        // mode 1 = registered
+        // mode 2 = registered, status yields location information
+        // mode 3 = registered, location info and cause value [not supported by SIM808]
+        static void suffix(ATC atc, uint8_t mode)
+        {
+            atc << mode;
+        }
+
         static uint8_t response_suffix(ATC atc, uint8_t& n, uint8_t& stat)
         {
             char _n;
@@ -73,6 +70,7 @@ public:
             return n;
         }
 
+        typedef ATBuilder::assign<registration> command;
         typedef ATBuilder::status<registration> status;
     };
 
@@ -80,7 +78,7 @@ public:
     // set report level status
     struct mobile_equipment_error
     {
-        static constexpr char CMD[] = "CMEE";
+        static constexpr char CMD[] = "+CMEE";
 
         typedef ATBuilder::assign_auto<mobile_equipment_error, uint8_t> command;
     };

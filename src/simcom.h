@@ -222,6 +222,35 @@ public:
     struct http_data
     {
         static constexpr char CMD[] = "+HTTPDATA";
+
+        // NOTE: since this is an embedded environment,making size uint16_t
+        // but we should revisit this
+        static void suffix(ATC atc, const char* data, uint16_t size, uint32_t timeout_ms = 30000)
+        {
+            atc << size << ',' << timeout_ms;
+
+            // FIX: send is part of below hack
+            atc.send();
+
+            // FIX: Hack-y.  We are placing a response handler in the request handler
+            // this is because +HTTPDATA has a back-and-forth behavior unusual for AT commands
+            // it goes:
+            // device <- AT+HTTPDATA=100,1000
+            // device -> DOWNLOAD
+            // device <- [raw data]
+            // device -> OK
+            //
+            // this only impacts code which wants to decouple request from response, and even then,
+            // hopefully only lightly since DOWNLOAD should come back very quickly
+            atc.input_newline();
+            atc >> "DOWNLOAD";
+            atc.input_newline();
+            atc.write(data, size);
+
+            // FIX: careful, because we're going to auto-send a newline afterthis
+        }
+
+        typedef ATBuilder::assign<http_data> command;
     };
 
     // executed to set up subsequent http calls
@@ -235,6 +264,66 @@ public:
         }
 
         typedef ATBuilder::assign<http_para> command;
+    };
+
+
+    // connect to GPRS network specifically
+    struct bringup_wireless
+    {
+        static constexpr char CMD[] = "+CIICR";
+
+        typedef ATBuilder::command_auto<bringup_wireless> command;
+    };
+
+
+    struct get_local_ip_address
+    {
+        static constexpr char CMD[] = "+CIFSR";
+
+        // UNTESTED
+        static void response_suffix(ATC atc, char* ip)
+        {
+            atc.getline(ip, 60);
+        }
+
+        typedef ATBuilder::command<get_local_ip_address> command;
+    };
+
+    struct bearer_settings
+    {
+        static constexpr char CMD[] = "+SAPBR";
+
+        ///
+        /// \param atc
+        /// \param command_type
+        ///   0 = close
+        ///   1 = open
+        ///   2 = query
+        ///   3 = set parameters
+        ///   4 = get parameters
+        /// \param cid
+        static void suffix(ATC atc, uint8_t command_type, uint8_t cid,
+                           const char* tag = nullptr, const char* value = nullptr)
+        {
+            atc << command_type << ',' << cid;
+            if(tag && value)
+            {
+                atc << ",\"" << tag << ANDTHEN << value;
+            }
+        }
+
+        // UNTESTED
+        static void response(ATC atc, uint8_t& cid, uint8_t& status, char* ip)
+        {
+            atc.ignore_whitespace_and_newlines();
+            atc.set_delimiter(",");
+            atc >> cid >> ',' >> status >> ',';
+            atc.reset_delimiters();
+            atc >> ip;
+            atc.check_for_ok();
+        }
+
+        typedef ATBuilder::assign<bearer_settings>  command;
     };
 };
 }

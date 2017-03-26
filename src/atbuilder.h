@@ -161,7 +161,7 @@ public:
         static void request(ATCommander& atc, TArgs...args)
         {
             command<TProvider>::prefix(atc);
-            atc.cout.put('=');
+            atc << '=';
             TMethodProvider::suffix(atc, args...);
             atc.send();
         }
