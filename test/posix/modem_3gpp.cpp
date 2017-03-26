@@ -15,12 +15,6 @@ TEST_CASE( "3gpp 27.007 simulator tests", "[3gpp-27.007]" )
 {
     ATCommander atc(fstd::cin, fstd::cout);
 
-    GIVEN("misc")
-    {
-        generic_at::set_ipmux(atc, false);
-        generic_at::get_ipmux(atc);
-    }
-
     GIVEN("mobile reporting adjustment")
     {
         atc.command<_27007::mobile_equipment_error>(1);

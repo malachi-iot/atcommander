@@ -18,6 +18,18 @@ protected:
         }
     };
 
+    struct status_helper_autoresponse_bool
+    {
+        static bool response_suffix(ATCommander& atc)
+        {
+            char input;
+
+            atc.input(input);
+
+            return input == '1';
+        }
+    };
+
     /// builds out request automatically given template argument types for each parameter
     /// NOTE: Only tested with one parameter so far
     /// \tparam TArgs
@@ -235,6 +247,9 @@ public:
 
     template <class TProvider, class TReturnType>
     struct status_auto : public status<TProvider, status_helper_autoresponse<TReturnType>> {};
+
+    template <class TProvider>
+    struct status_bool : public status<TProvider, status_helper_autoresponse_bool> {};
 
     /*
     template <char const &array[N], int N>

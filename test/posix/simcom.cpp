@@ -10,18 +10,34 @@ TEST_CASE( "SIMCOM commands", "[simcom]" )
 
     ATCommander atc(fstd::cin, fstd::cout);
 
-    GIVEN("HTTP INIT")
+    GIVEN("HTTP tests")
     {
-        atc.command<simcom::generic_at::http_init>();
+        typedef  at::http http;
+        GIVEN("INIT")
+        {
+            atc.command<http::init>();
+        }
+        GIVEN("GET")
+        {
+            //simcom::generic_at::http_action::command::request(atc, 0);
+            atc.command<simcom::generic_at::http_action>(0);
+            //atc.command<hayes::standard_at::reset>();
+        }
+        GIVEN("SSL")
+        {
+            atc.command<http::ssl>(true);
+        }
     }
-    GIVEN("HTTP GET")
+    GIVEN("IP tests")
     {
-        //simcom::generic_at::http_action::command::request(atc, 0);
-        atc.command<simcom::generic_at::http_action>(0);
-        //atc.command<hayes::standard_at::reset>();
-    }
-    GIVEN("HTTP SSL")
-    {
-        atc.command<at::http_ssl>(true);
+        typedef at::ip ip;
+
+        atc.command<ip::ssl>(true);
+
+        GIVEN("MUX")
+        {
+            atc.command<ip::mux>(true);
+            atc.status<ip::mux>();
+        }
     }
 }

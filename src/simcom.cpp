@@ -6,10 +6,6 @@
 
 namespace simcom {
 
-constexpr char generic_at::MUX[];
-constexpr char generic_at::CIP[];
-
-constexpr char generic_at::CIPMUX[];
 constexpr char generic_at::CIPMODE[];
 
 constexpr char generic_at::CMGF[];
@@ -29,8 +25,12 @@ constexpr char generic_at::TCP[];
 constexpr char generic_at::UDP[];
 constexpr char generic_at::ANDTHEN[];
 
-constexpr char generic_at::ip_start::CMD[];
-constexpr char generic_at::ip_ssl::CMD[];
+// scoped only to this CPP, convenient for reducing verbosity
+typedef generic_at::ip ip;
+
+constexpr char ip::start::CMD[];
+constexpr char ip::ssl::CMD[];
+constexpr char ip::mux::CMD[];
 
 constexpr char generic_at::http_action::CMD[];
 constexpr char generic_at::http_read::CMD[];

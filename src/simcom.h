@@ -15,12 +15,8 @@ namespace simcom
 class generic_at
 {
     typedef ATCommander& ATC;
+    typedef ATBuilder ATB;
 
-    // EXPERIMENTAL
-    static constexpr char CIP[] = "+CIP";
-    static constexpr char MUX[] = "MUX";
-
-    static constexpr char CIPMUX[] = "+CIPMUX";
     static constexpr char CIPMODE[] = "+CIPMODE";
     static constexpr char CMGF[] = "+CMGF";
     static constexpr char CMGR[] = "+CMGR"; // receive SMS
@@ -39,31 +35,6 @@ class generic_at
     static constexpr char ANDTHEN[] = "\",\"";
 
 public:
-    static void set_ipmux(ATC atc, bool multi)
-    {
-        atc.cout << atc.AT << CIP << MUX << '=' << (multi ? 1 : 0) << fstd::endl;
-        atc.check_for_ok();
-    }
-
-    static bool get_ipmux(ATC atc)
-    {
-        // TODO:
-        char mux;
-
-        atc.send_request(CIPMUX);
-
-        atc.ignore_whitespace_and_newlines();
-        atc.input_match(CIPMUX);
-        atc.input_match(": ");
-        atc.input(mux);
-
-        atc.check_for_ok();
-
-        //cin >> "+CIPMUX: " >> mux >> endl;
-
-        return mux == '1';
-    }
-
     static void set_transparent(ATC atc, bool transparent)
     {
         atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << fstd::endl;
@@ -99,41 +70,79 @@ public:
     }
 
 
-    struct sms_send
+    struct sms
     {
-        static constexpr char CMD[] = "+CMGS";
-    };
-
-    struct ip_start
-    {
-        static constexpr char CMD[] = "+CIPSTART";
-
-        static void suffix(ATC atc, const char* mode, const char* destination, uint16_t port, short connection = -1)
+        struct send
         {
-            // Use only during +CIPMUX=1
-            if(connection != -1)
+            static constexpr char CMD[] = "+CMGS";
+
+            static void suffix(ATCommander& atc, const char* phone_number, const char* message)
             {
-                atc << connection;
-                atc << ',';
+                atc << '"' << phone_number << '"';
+                atc.send();
+                atc.write(message, strlen(message));
+                atc << 26; // ctrl+Z is delimiter for sending a text message
             }
 
-            atc << '"' << mode << ANDTHEN;
-            atc << destination << ANDTHEN << port << '"';
-        }
+            static void response(ATCommander& atc)
+            {
+                int ch;
 
-        static void suffix(ATC atc, const char* destination, uint16_t port, bool tcp = true, short connection = -1)
-        {
-            suffix(atc, tcp ? TCP : UDP, destination, port, connection);
-        }
+                // We get '>' prompts for every return.
+                // TECHNICALLY we should consume these *before* writing out the message,
+                // but haven't worked out a graceful architecture for that yet
+                while((ch = atc.get()) == '>');
 
-        // will be an assign operation
+                atc.unget(ch);
+
+                atc.check_for_ok();
+            }
+
+            ATB::assign<send> command;
+        };
     };
 
-    struct ip_ssl
+    struct ip
     {
-        static constexpr char CMD[] = "+CIPSSL";
+        struct mux
+        {
+            static constexpr char CMD[] = "+CIPMUX";
 
-        typedef ATBuilder::assign_bool<ip_ssl> command;
+            typedef ATB::assign_bool<mux> command;
+            typedef ATB::status_bool<mux> status;
+        };
+
+        struct start
+        {
+            static constexpr char CMD[] = "+CIPSTART";
+
+            static void suffix(ATC atc, const char *mode, const char *destination, uint16_t port, short connection = -1)
+            {
+                // Use only during +CIPMUX=1
+                if (connection != -1)
+                {
+                    atc << connection;
+                    atc << ',';
+                }
+
+                atc << '"' << mode << ANDTHEN;
+                atc << destination << ANDTHEN << port << '"';
+            }
+
+            static void suffix(ATC atc, const char *destination, uint16_t port, bool tcp = true, short connection = -1)
+            {
+                suffix(atc, tcp ? TCP : UDP, destination, port, connection);
+            }
+
+            // will be an assign operation
+        };
+
+        struct ssl
+        {
+            static constexpr char CMD[] = "+CIPSSL";
+
+            typedef ATBuilder::assign_bool<ssl> command;
+        };
     };
 
     // Should be executed first before other http_ commands
@@ -294,6 +303,14 @@ public:
         static constexpr char CMD[] = "+HTTPSSL";
 
         typedef ATBuilder::assign_bool<http_ssl> command;
+    };
+
+
+    struct http
+    {
+        typedef http_ssl    ssl;
+        typedef http_action action;
+        typedef http_init   init;
     };
 
 
