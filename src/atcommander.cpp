@@ -2,15 +2,39 @@
 
 constexpr char ATCommander::OK[];
 constexpr char ATCommander::AT[];
+constexpr char ATCommander::ERROR[];
 constexpr char ATCommander::WHITESPACE_NEWLINE[];
+
+#define FEATURE_OK_ERROR_CHECK
 
 bool ATCommander::check_for_ok()
 {
+    const char* OK_OR_ERROR[] = { ERROR, OK, nullptr };
+
     ignore_whitespace_and_newlines();
+
+#ifdef FEATURE_OK_ERROR_CHECK
+    const char* result = input_match(OK_OR_ERROR);
+
+    // NOTE: cuz input_match (multi) grabs whole line right now we disable skip_newline
+    // however input_match will be changing that behavior
+    //skip_newline();
+
+    if(result == OK)
+    {
+        return true;
+    }
+    else
+    {
+        error.set_at_result();
+        return false;
+    }
+#else
+    // Old check for OK only code
     bool got_ok = input_match(OK);
     if(!got_ok) return false;
     skip_newline();
-    return true;
+#endif
 }
 
 void ATCommander::ignore_whitespace_and_newlines()

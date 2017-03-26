@@ -8,6 +8,7 @@
 //#define DEBUG_ATC_OUTPUT
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
+#include "simcom.h"
 
 #define MAL_LED LED1
 
@@ -93,10 +94,10 @@ int main()
 
     ATCommander atc(icserial, ocserial);
 
-    atc << "ATZ";
-    atc.send();
     const char ATZ[] = "ATZ";
-    const char* keywords_atz[] = { ATZ, "OK" };
+    const char* keywords_atz[] = { ATZ, "OK", nullptr };
+    atc << ATZ;
+    atc.send();
     atc.ignore_whitespace_and_newlines();
     if(atc.input_match(keywords_atz) == ATZ)
     {
@@ -104,15 +105,31 @@ int main()
         atc.check_for_ok();
     }
 
-    hayes::standard_at::echo::command::request(atc, 0);
-    hayes::standard_at::echo::command::read_echo(atc, 0);
-    hayes::standard_at::echo::command::response(atc);
-
-    //atc.command<hayes::standard_at::reset>();
+    hayes::v250::echo::command::request(atc, 0);
+    hayes::v250::echo::command::read_echo(atc, 0);
+    hayes::v250::echo::command::response(atc);
 
     char buf[128];
 
-    hayes::standard_at::information(atc, 0, buf, 128);
+    hayes::v250::information::command::request(atc, 0);
+    hayes::v250::information::command::response(atc, buf, 128);
+
+    //simcom::generic_at::http_init::command::request(atc);
+    //simcom::generic_at::http_init::command::response(atc);
+
+    atc.error.reset();
+    atc.command<simcom::generic_at::http_init>();
+    if(atc.error.at_result())
+    {
+        // Then it's probably because http was already initialized, so ignore it
+    }
+    atc.command<simcom::generic_at::http_para>("URL", "http://vis.lbl.gov/Research/acti/small/small.html");
+    simcom::generic_at::http_action::command::request(atc, 0);
+    uint16_t status_code;
+    uint16_t datalen;
+    simcom::generic_at::http_action::command::response(atc, status_code, datalen);
+
+    //atc.command<hayes::standard_at::information2>(0);
 
     echoThread.start(echo2);
 

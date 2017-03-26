@@ -127,13 +127,56 @@ public:
         // will be an assign operation
     };
 
+    // Should be executed first before other http_ commands
+    struct http_init
+    {
+        static constexpr char CMD[] = "+HTTPINIT";
+
+        typedef ATBuilder::command_auto<http_init> command;
+    };
+
+
     // max response time 5s
     struct http_action
     {
         static constexpr char CMD[] = "+HTTPACTION";
 
+        static void suffix(ATC atc, uint8_t method)
+        {
+            atc << method;
+        }
+
+        static void response(ATC atc, uint8_t& method, uint16_t& status_code, uint16_t& datalen)
+        {
+            atc.check_for_ok();
+            atc.ignore_whitespace_and_newlines();
+            atc >> CMD >> ": ";
+            atc >> method >> ',';
+            atc.set_delimiter(",");
+            atc >> status_code >> ',';
+            atc.reset_delimiters();
+            atc >> datalen;
+            atc.input_newline();
+        }
+
+        static void response(ATC atc, uint16_t& status_code, uint16_t& datalen)
+        {
+            atc.check_for_ok();
+            atc.ignore_whitespace_and_newlines();
+            atc >> CMD >> ": ";
+            char method; // sometimes method is optional, since we probably just sent the method ourselves already
+            // FIX: atc >> char goes to literal match, which we don't want
+            atc.input(method);
+            atc >> ',';
+            atc.set_delimiter(",");
+            atc >> status_code >> ',';
+            atc.reset_delimiters();
+            atc >> datalen;
+            atc.input_newline();
+        }
+
         // method 0 = GET, 1 = POST, 2 = HEAD
-        typedef ATBuilder::assign_auto<http_action, uint8_t> command;
+        typedef ATBuilder::assign<http_action> command;
     };
 
 
@@ -179,14 +222,6 @@ public:
     struct http_data
     {
         static constexpr char CMD[] = "+HTTPDATA";
-    };
-
-    // Should be executed first before other http_ commands
-    struct http_init
-    {
-        static constexpr char CMD[] = "+HTTPINIT";
-
-        typedef ATBuilder::command_auto<http_init> command;
     };
 
     // executed to set up subsequent http calls

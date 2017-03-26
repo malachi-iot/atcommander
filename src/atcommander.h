@@ -118,6 +118,24 @@ protected:
 
 public:
 
+    class _error_struct
+    {
+        typedef uint8_t status;
+
+        status _status;
+
+        static constexpr status at_result_bit = 0x01;   // When ERROR comes back from an AT command
+        static constexpr status transport_bit = 0x02;   // When underlying cin/cout has an issue
+
+    public:
+        void reset() { _status = 0; }
+
+        bool at_result() { return _status & at_result_bit; }
+        void set_at_result() { _status |= at_result_bit; }
+
+    } error;
+
+
 #ifdef DEBUG_SIMULATED
     FactUtilEmbedded::layer1::CircularBuffer<char, 128> debugBuffer;
 #endif
@@ -129,6 +147,7 @@ public:
 
     static constexpr char OK[] = "OK";
     static constexpr char AT[] = "AT";
+    static constexpr char ERROR[] = "ERROR";
 
     // TODO: fix this name
     bool is_cached() { return cache != 0; }
@@ -147,6 +166,12 @@ public:
     void set_delimiter(const char* delimiters)
     {
         this->delimiters = delimiters;
+    }
+
+
+    void reset_delimiters()
+    {
+        this->delimiters = WHITESPACE_NEWLINE;
     }
 
     int _get()
@@ -279,10 +304,14 @@ public:
 
         getline(buf, 128);
 
+        const char *result = layer3::MultiMatcher::do_match(buf, keywords);
 #ifdef DEBUG_ATC_INPUT
+        if(result)
+            fstd::clog << "Matched: " << result << fstd::endl;
+        else
+            fstd::clog << "Matched nothing" << fstd::endl;
 #endif
-
-        return layer3::MultiMatcher::do_match(buf, keywords);
+        return result;
     }
 
 
@@ -469,7 +498,10 @@ public:
     template <class TCmdClass, class ...TArgs>
     void command(TArgs...args)
     {
+        // for some reason, some compilers are treating "constexpr char[]" as not const in this case
+#ifdef DEBUG_ATC_STRICT
         static_assert(TCmdClass::CMD, "Looking for CMD.  Are you pointing to the right class?");
+#endif
 
         TCmdClass::command::request(*this, args...);
         TCmdClass::command::response(*this);
@@ -478,6 +510,10 @@ public:
     template <class TCmdClass, class ...TArgs>
     auto status(TArgs...args) -> decltype(TCmdClass::status::response(*this, args...))
     {
+#ifdef DEBUG_ATC_STRICT
+        static_assert(TCmdClass::CMD, "Looking for CMD.  Are you pointing to the right class?");
+#endif
+
         TCmdClass::status::request(*this);
         return TCmdClass::status::response(*this, args...);
     }
