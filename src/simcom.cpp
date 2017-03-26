@@ -26,7 +26,8 @@ constexpr char generic_at::UDP[];
 constexpr char generic_at::ANDTHEN[];
 
 // scoped only to this CPP, convenient for reducing verbosity
-typedef generic_at::ip ip;
+typedef generic_at::ip      ip;
+typedef generic_at::sms     sms;
 
 constexpr char ip::start::CMD[];
 constexpr char ip::ssl::CMD[];
@@ -44,4 +45,7 @@ constexpr char generic_at::http_ssl::CMD[];
 constexpr char generic_at::bringup_wireless::CMD[];
 constexpr char generic_at::get_local_ip_address::CMD[];
 constexpr char generic_at::bearer_settings::CMD[];
+
+constexpr char sms::send::CMD[];
+constexpr char sms::receive::CMD[];
 }

@@ -100,6 +100,24 @@ public:
 
             ATB::assign<send> command;
         };
+
+
+        struct receive
+        {
+            static constexpr char CMD[] = "+CMGR";
+
+            static void suffix(ATCommander& atc, uint8_t index)
+            {
+                atc << index;
+            }
+
+            static void suffix(ATCommander& atc, uint8_t index, bool consume_message)
+            {
+                atc << index << ',' << (consume_message ? '1' : '0');
+            }
+
+            //static void response(ATCommander& atc, )
+        };
     };
 
     struct ip
