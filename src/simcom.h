@@ -7,7 +7,6 @@
 
 #include "atcommander.h"
 #include "atbuilder.h"
-#include <fact/iostream.h>
 
 // http://m2msupport.net/m2msupport/tutorial-for-simcom-m2m-modules/
 namespace simcom
@@ -38,9 +37,6 @@ class generic_at
     static constexpr char TCP[] = "TCP";
     static constexpr char UDP[] = "UDP";
     static constexpr char ANDTHEN[] = "\",\"";
-
-    typedef fstd::ostream ostream;
-    typedef fstd::istream istream;
 
 public:
     static void set_ipmux(ATC atc, bool multi)

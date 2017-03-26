@@ -21,28 +21,22 @@ public:
     {
         static constexpr char CMD[] = "+CGATT";
 
-        struct _assign
+        static void suffix(ATC atc, bool attach)
         {
-            static void suffix(ATC atc, bool attach)
-            {
-                atc << (attach ? '1' : '0');
-            }
-        };
+            atc << (attach ? '1' : '0');
+        }
 
-        struct _status
+        static bool response_suffix(ATC atc)
         {
-            static bool response_suffix(ATC atc)
-            {
-                char level;
+            char level;
 
-                atc.input(level);
+            atc.input(level);
 
-                return level == '1';
-            }
-        };
+            return level == '1';
+        }
 
-        typedef ATBuilder::assign<attach, _assign> command;
-        typedef ATBuilder::status<attach, _status> status;
+        typedef ATBuilder::assign<attach, attach> command;
+        typedef ATBuilder::status<attach, attach> status;
         typedef ATBuilder::status_auto<attach, char> status_char;
     };
 
