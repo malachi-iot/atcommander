@@ -28,6 +28,7 @@ constexpr char generic_at::ANDTHEN[];
 // scoped only to this CPP, convenient for reducing verbosity
 typedef generic_at::ip      ip;
 typedef generic_at::sms     sms;
+typedef generic_at::http    http;
 
 constexpr char ip::start::CMD[];
 constexpr char ip::ssl::CMD[];
@@ -39,6 +40,7 @@ constexpr char generic_at::http_head::CMD[];
 constexpr char generic_at::http_para::CMD[];
 constexpr char generic_at::http_init::CMD[];
 constexpr char generic_at::http_data::CMD[];
+constexpr char http::term::CMD[];
 
 constexpr char generic_at::http_ssl::CMD[];
 

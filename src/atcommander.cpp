@@ -74,13 +74,12 @@ bool ATCommander::skip_newline()
     }
     else if(ch == 10)
     {
-        ch = get();
-        if(ch == 13)
-        {
-            return true;
-        }
+        // WARNING: may not be 100% POSIX compliant!
+        ch = cin.peek();
 
-        unget(ch);
+        if (ch == 13)
+            ch = get();
+
         return true;
     }
 
@@ -195,13 +194,22 @@ bool MultiMatcher::parse(char c)
             // FIX: eating CR for now, but we can do better (parse it out before we get here)
             return true;
         }
-            // TODO: make incoming terminator more configurable
-        else if(c == 10 && ch == 0)
+        else if(ch == 0) // reaching ch == 0 here means we DID get a match, technically
         {
-            // if we get here it means both incoming character and our own keyword
-            // are at their delimiters, meaning an exact match
             match = true;
-            // and we're done
+            // but we might want to keep looking to make a more "greedy" match (longer keyword, if available)
+
+            // TODO: make incoming terminator more configurable
+            if(c == 10)
+            {
+                // if we get here it means both incoming character and our own keyword
+                // are at their delimiters, meaning an exact match
+                // and we're done
+                return false;
+            }
+
+            // TODO: greedy match mode not yet implemented, will involve fiddling with vpos
+            // i.e. only bumping it forward if we really want to abandon this match
             return false;
         }
 

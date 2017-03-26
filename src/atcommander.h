@@ -101,7 +101,7 @@ protected:
     template <class T, class ...TArgs>
     void _send(T value, TArgs...args)
     {
-        cout << value;
+        *this << value;
         _send(args...);
     }
 
@@ -295,6 +295,26 @@ public:
         return true;
     }
 
+
+    const char* input_match_experimental(const char** keywords)
+    {
+        layer3::MultiMatcher matcher(keywords);
+        int ch;
+
+        while((ch = get()) != -1)
+        {
+            if(!matcher.parse(ch)) break;
+        }
+
+        if(matcher.is_matched())
+        {
+            unget(ch);
+            return matcher.matched();
+        }
+        else
+            // don't bother ungetting here because we're already in a funky state, so who cares
+            return nullptr;
+    }
 
     // FIX: Right now hard-wired to full-line input matching
     // FIX: Also preallocates big buffer for that
@@ -501,6 +521,10 @@ public:
         send();
     }
 
+    /// Send of an AT command (either assign or command mode expected)
+    /// \tparam TCmdClass struct containing command definitions
+    /// \tparam TArgs
+    /// \param args arguments to send to TCmdClass::suffix
     template <class TCmdClass, class ...TArgs>
     void command(TArgs...args)
     {
@@ -510,6 +534,23 @@ public:
 #endif
 
         TCmdClass::command::request(*this, args...);
+        TCmdClass::command::response(*this);
+    }
+
+    /// Same as command, but for times where we explicitly expect to be in ATE1 echoback mode
+    /// \tparam TCmdClass
+    /// \tparam TArgs
+    /// \param args
+    template <class TCmdClass, class ...TArgs>
+    void command_with_echo(TArgs...args)
+    {
+        // for some reason, some compilers are treating "constexpr char[]" as not const in this case
+#ifdef DEBUG_ATC_STRICT
+        static_assert(TCmdClass::CMD, "Looking for CMD.  Are you pointing to the right class?");
+#endif
+
+        TCmdClass::command::request(*this, args...);
+        TCmdClass::command::read_echo(*this, args...);
         TCmdClass::command::response(*this);
     }
 

@@ -5,7 +5,10 @@
 
 #include <fact/iostream.h>
 
-#define DEBUG_ATC_OUTPUT
+//#define DEBUG_ATC_OUTPUT
+#define DEBUG_ATC_INPUT
+#define DEBUG_ATC_MATCH
+
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
 #include "simcom.h"
@@ -87,21 +90,9 @@ struct sim808 :
     public _3gpp::_27007
     {};
 
-int main()
+// Old one, unused.  Keep around until new one leaves experimental status
+void reset_with_optional_echo(ATCommander& atc)
 {
-    Thread echoThread;
-
-    EventQueue queue;
-
-    clog << "Compiled at " __TIME__ "\r\n";
-    clog << "ciserial initialized as serial = " << icserial.rdbuf()->is_serial() << "\r\n";
-
-    serial.baud(9600);
-
-    queue.call_every(1000, blinky);
-
-    ATCommander atc(icserial, ocserial);
-
     const char ATZ[] = "ATZ";
     const char* keywords_atz[] = { ATZ, "OK", nullptr };
     atc << ATZ;
@@ -112,10 +103,27 @@ int main()
         clog << "Initialized (was in ATE1 mode)\r\n";
         atc.check_for_ok();
     }
+}
 
-    sim808::echo::command::request(atc, 0);
-    sim808::echo::command::read_echo(atc, 0);
-    sim808::echo::command::response(atc);
+int main()
+{
+    Thread echoThread;
+
+    EventQueue queue;
+
+    clog << "Compiled at " __TIME__ "\r\n";
+    //clog << "ciserial initialized as serial = " << icserial.rdbuf()->is_serial() << "\r\n";
+
+    serial.baud(9600);
+
+    queue.call_every(1000, blinky);
+
+    ATCommander atc(icserial, ocserial);
+
+    sim808::experimental::reset(atc);
+
+    // turn off echo mode
+    atc.command_with_echo<sim808::echo>(0);
 
     char buf[128];
 
@@ -130,31 +138,30 @@ int main()
     //atc.command<simcom::generic_at::bringup_wireless>();
     atc.command<sim808::bearer_settings>(1, 1);
 
+    typedef sim808::http http;
+
     atc.error.reset();
-    atc.command<sim808::http_init>();
+    atc.command<http::init>();
     if(atc.error.at_result())
     {
+        atc.error.reset();
         // Then it's probably because http was already initialized, so ignore it
     }
 
-    typedef sim808::http http;
-
     atc.command<http::para>("CID", 1);
-    //atc.command<sim808::http_para>("URL", "http://vis.lbl.gov/Research/acti/small/small.html");
     atc.command<http::para>("URL", "https://hooks.slack.com/services/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");
     atc.command<http::para>("CONTENT", "application/json");
     atc.command<http::ssl>(true);
 
     char notify[128];
     // TODO: optimize so we can do atc << commands here instead
-    sprintf(notify, "{\"text\": \"%s\"}", "ATCommander ONLINE");
-    //atc.command<sim808::http_data>("HELLO", 5, 5000);
+    sprintf(notify, "{\"text\": \"%s\"}", "ATCommander ONLINE (built @ " __DATE__ " "  __TIME__ ")");
     atc.command<http::data>(notify);
 
-    http::action::command::request(atc, 1);
-    uint16_t status_code;
-    uint16_t datalen;
-    http::action::command::response(atc, status_code, datalen);
+    http::action::experimental::post(atc);
+
+    // leave initialized for now, since we are developing still
+    //atc.command<http::term>();
 
     echoThread.start(echo2);
 

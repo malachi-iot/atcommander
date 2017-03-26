@@ -193,6 +193,17 @@ public:
         }
 
         template <class ...TArgs>
+        //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
+        static void read_echo(ATCommander& atc, TArgs...args)
+        {
+            atc >> ATCommander::AT;
+            atc >> TProvider::CMD;
+            atc >> '=';
+            TMethodProvider::echo_suffix(atc, args...);
+            atc.input_newline();
+        }
+
+        template <class ...TArgs>
         static void run(ATCommander& atc, TArgs...args)
         {
             request(atc, args...);

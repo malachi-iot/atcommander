@@ -48,6 +48,48 @@ public:
 
         typedef ATBuilder::command<information> command;
     };
+
+    struct experimental
+    {
+        static const char* detect_echo_helper(ATC atc)
+        {
+            atc.ignore_whitespace_and_newlines();
+            static const char* keywords_atz[] = { ATCommander::AT, ATCommander::OK, nullptr };
+            const char* matched = atc.input_match_experimental(keywords_atz);
+#ifdef DEBUG_ATC_MATCH
+            if(matched == nullptr)
+            {
+                fstd::clog << "No match found" << fstd::endl;
+            }
+            else
+            {
+                fstd::clog << "Matched: " << matched << fstd::endl;
+            }
+#endif
+            return matched;
+        }
+
+        static void reset(ATC atc)
+        {
+            reset::command::request(atc);
+
+            const char* matched = detect_echo_helper(atc);
+
+            if(matched == ATCommander::AT)
+            {
+                // prefix of ATZ, so we're in echo mode.  Read in the Z also
+                atc >> 'Z';
+                // since we're echoing, be sure to read in the newline also
+                atc.input_newline();
+                // since this wasn't the OK, be sure to grab that now
+                atc.check_for_ok();
+            }
+            else
+            {
+                atc.input_newline();
+            }
+        }
+    };
 };
 
 }

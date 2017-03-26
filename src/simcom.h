@@ -172,19 +172,14 @@ public:
     };
 
 
-    struct http_term
-    {
-        static constexpr char CMD[] = "+HTTPTERM";
-
-        typedef ATBuilder::command_auto<http_term> command;
-    };
-
-
     // max response time 5s
     struct http_action
     {
         static constexpr char CMD[] = "+HTTPACTION";
 
+        // TODO: I think there should always be a "native" option to pass in parameters
+        // as char/string and only if it doesn't conflict, add a "cooked" version
+        // therefore this uint8_t version has to go, since it conflicts with char
         static void suffix(ATC atc, uint8_t method)
         {
             atc << method;
@@ -221,6 +216,35 @@ public:
 
         // method 0 = GET, 1 = POST, 2 = HEAD
         typedef ATBuilder::assign<http_action> command;
+
+        class experimental
+        {
+            // direct-invoke user function
+            // BLOCKING
+            static uint16_t _do(ATC atc, uint8_t method)
+            {
+                command::request(atc, method);
+                uint16_t datalen = 0;
+                uint16_t status_code = 0;
+                command::response(atc, status_code, datalen);
+                return status_code;
+            }
+
+        public:
+            // direct-invoke user function
+            // BLOCKING
+            static uint16_t get(ATC atc)
+            {
+                return _do(atc, 0);
+            }
+
+            // direct-invoke user function
+            // BLOCKING
+            static uint16_t post(ATC atc)
+            {
+                return _do(atc, 1);
+            }
+        };
     };
 
 
@@ -342,6 +366,13 @@ public:
         typedef http_init   init;
         typedef http_para   para;
         typedef http_data   data;
+
+        struct term
+        {
+            static constexpr char CMD[] = "+HTTPTERM";
+
+            typedef ATBuilder::command_auto<term> command;
+        };
     };
 
 
