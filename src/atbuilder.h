@@ -37,6 +37,20 @@ protected:
     };
 
 
+    struct command_helper_autorequest_bool
+    {
+        static void suffix(ATCommander& atc, bool value)
+        {
+            atc << (value ? '1' : '0');
+        }
+
+        static void echo_suffix(ATCommander& atc, bool value)
+        {
+            atc._match(value ? '1' : '0');
+        }
+    };
+
+
     struct _command_base
     {
         template <typename T, size_t N>
@@ -177,6 +191,13 @@ public:
 
     template <class TProvider, class TAssignParameter>
     struct assign_auto : assign<TProvider, command_helper_autorequest<TAssignParameter>> {};
+
+    /// Special flavor of assign_auto which takes first parameters as a boolean and converts it to
+    /// a '1' or a '0'
+    /// \tparam TProvider
+    /// \tparam TAssignParameter
+    template <class TProvider, class TAssignParameter = TProvider>
+    struct assign_bool : assign<TProvider, command_helper_autorequest_bool> {};
 
     template <class TProvider, class TMethodProvider = TProvider>
     struct status : _command_base

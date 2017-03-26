@@ -98,7 +98,13 @@ public:
         atc.do_assign(CMGS);
     }
 
-    struct ipstart
+
+    struct sms_send
+    {
+        static constexpr char CMD[] = "+CMGS";
+    };
+
+    struct ip_start
     {
         static constexpr char CMD[] = "+CIPSTART";
 
@@ -123,12 +129,27 @@ public:
         // will be an assign operation
     };
 
+    struct ip_ssl
+    {
+        static constexpr char CMD[] = "+CIPSSL";
+
+        typedef ATBuilder::assign_bool<ip_ssl> command;
+    };
+
     // Should be executed first before other http_ commands
     struct http_init
     {
         static constexpr char CMD[] = "+HTTPINIT";
 
         typedef ATBuilder::command_auto<http_init> command;
+    };
+
+
+    struct http_term
+    {
+        static constexpr char CMD[] = "+HTTPTERM";
+
+        typedef ATBuilder::command_auto<http_term> command;
     };
 
 
@@ -261,6 +282,18 @@ public:
         }
 
         typedef ATBuilder::assign<http_para> command;
+    };
+
+
+    // see section 2.2 of sim800_series_ssl_application_note
+    // +HTTPACTION code results when using this:
+    // 605: SSL failed to establish channels
+    // 606: SSL alert: fatal/connection terminated
+    struct http_ssl
+    {
+        static constexpr char CMD[] = "+HTTPSSL";
+
+        typedef ATBuilder::assign_bool<http_ssl> command;
     };
 
 

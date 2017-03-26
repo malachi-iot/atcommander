@@ -29,13 +29,17 @@ constexpr char generic_at::TCP[];
 constexpr char generic_at::UDP[];
 constexpr char generic_at::ANDTHEN[];
 
-constexpr char generic_at::ipstart::CMD[];
+constexpr char generic_at::ip_start::CMD[];
+constexpr char generic_at::ip_ssl::CMD[];
+
 constexpr char generic_at::http_action::CMD[];
 constexpr char generic_at::http_read::CMD[];
 constexpr char generic_at::http_head::CMD[];
 constexpr char generic_at::http_para::CMD[];
 constexpr char generic_at::http_init::CMD[];
 constexpr char generic_at::http_data::CMD[];
+
+constexpr char generic_at::http_ssl::CMD[];
 
 constexpr char generic_at::bringup_wireless::CMD[];
 constexpr char generic_at::get_local_ip_address::CMD[];
