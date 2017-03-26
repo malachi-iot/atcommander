@@ -25,5 +25,15 @@ constexpr char generic_at::CIPCLOSE[];
 constexpr char generic_at::CIPSHUT[];
 
 constexpr char generic_at::CDNSGIP[];
+constexpr char generic_at::TCP[];
+constexpr char generic_at::UDP[];
+constexpr char generic_at::ANDTHEN[];
 
+constexpr char generic_at::ipstart::CMD[];
+constexpr char generic_at::http_action::CMD[];
+constexpr char generic_at::http_read::CMD[];
+constexpr char generic_at::http_head::CMD[];
+constexpr char generic_at::http_para::CMD[];
+constexpr char generic_at::http_init::CMD[];
+constexpr char generic_at::http_data::CMD[];
 }

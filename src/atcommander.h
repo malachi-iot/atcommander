@@ -469,6 +469,8 @@ public:
     template <class TCmdClass, class ...TArgs>
     void command(TArgs...args)
     {
+        static_assert(TCmdClass::CMD, "Looking for CMD.  Are you pointing to the right class?");
+
         TCmdClass::command::request(*this, args...);
         TCmdClass::command::response(*this);
     }
@@ -521,6 +523,13 @@ inline ATCommander& operator >>(ATCommander& atc, uint8_t& value)
 
 
 //template <>
+inline ATCommander& operator >>(ATCommander& atc, uint16_t& value)
+{
+    atc.input(value);
+    return atc;
+}
+
+
 inline ATCommander& operator >>(ATCommander& atc, float& value)
 {
     atc.input(value);
