@@ -4,3 +4,5 @@ mbed-os
 BufferedSoftSerial
 
 mbed_settings.pyc
+
+secrets.h

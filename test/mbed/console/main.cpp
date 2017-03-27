@@ -14,6 +14,8 @@
 #include "simcom.h"
 #include "3gpp.h"
 
+#include "secrets.h"
+
 #define MAL_LED LED1
 
 static void blinky(void) {
@@ -140,7 +142,7 @@ int main()
     }
 
     atc.command<http::para>("CID", 1);
-    atc.command<http::para>("URL", "https://hooks.slack.com/services/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");
+    atc.command<http::para>("URL", SLACK_WEBHOOK);
     atc.command<http::para>("CONTENT", "application/json");
     atc.command<http::ssl>(true);
 
