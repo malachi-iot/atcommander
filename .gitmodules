@@ -7,3 +7,6 @@
 [submodule "ext/libusbpp"]
 	path = ext/libusbpp
 	url = https://github.com/JENETRIC/libusbpp.git
+[submodule "ext/config.webhooks"]
+	path = ext/config.webhooks
+	url = git@gitlab.com:malachi-configuration/webhooks.git
