@@ -135,7 +135,23 @@ public:
         // oftentimes this is NOT what you want, so be sure to overload (override-ish)
         static bool response(ATCommander& atc)
         {
+            //response_helper<TMethodProvider>();
             return atc.check_for_ok();
+        }
+
+        template <class T>
+        static auto response_helper() ->
+                typename fstd::enable_if<!fstd::is_function<typename T::response>::value, typename T::CMD>::type
+        {
+            fstd::clog << "Has NO response helper" << fstd::endl;
+        }
+
+        template <class T>
+        static auto response_helper() ->
+                typename fstd::enable_if<fstd::is_function<typename T::response>::value, typename T::response>::type
+        {
+            fstd::clog << "Has a response helper" << fstd::endl;
+            //auto val = fstd::is_function<typename TMethodProvider::response>::value;
         }
 
 
