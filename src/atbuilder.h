@@ -91,13 +91,6 @@ public:
             _command_base::prefix(atc, TProvider::CMD);
         }
 
-        // Default response behavior is only to check for OK after a command
-        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
-        static bool response(ATCommander& atc)
-        {
-            return atc.check_for_ok();
-        }
-
         template <class ...TArgs>
         static void request(ATCommander& atc, TArgs...args)
         {
@@ -130,7 +123,7 @@ public:
 
         // Works, but don't need it - overloading does the trick
         template<typename T>
-        struct HasUsedMemoryMethod
+        struct HasResponseMethod
         {
             template<typename U, size_t (U::*)() const> struct SFINAE {};
             template<typename U> static char Test(SFINAE<U, &U::response>*);
@@ -138,14 +131,31 @@ public:
             static const bool Has = sizeof(Test<T>(0)) == sizeof(char);
         };
 
+        // Default response behavior is only to check for OK after a command
+        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
+        static bool response(ATCommander& atc)
+        {
+            return atc.check_for_ok();
+        }
+
+
         // TODO: be mindful, this might be a C++14 only feature
         template <class ...TArgs>
         //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
         static void response(ATCommander& atc, TArgs...args)
         {
+            // FIX: Need to do some SFINAE magic here to call check_for_ok
+            // if TMethodProvider::response doesn't exist
+            TMethodProvider::response(atc, args...);
+            /*
+            auto value = HasResponseMethod<TMethodProvider>::Has;
+
+            if(value)
             //auto returnValue = TMethodProvider::response(atc, args...);
             //return returnValue;
-            TMethodProvider::response(atc, args...);
+                TMethodProvider::response(atc, args...);
+            else
+                atc.check_for_ok(); */
         }
 
         // TODO: be mindful, this might be a C++14 only feature
@@ -236,6 +246,7 @@ public:
 
         static void response_prefix(ATCommander& atc)
         {
+            atc.ignore_whitespace_and_newlines();
             atc.input_match(TProvider::CMD);
             atc.input_match(": ");
         }
@@ -247,6 +258,9 @@ public:
         {
             response_prefix(atc);
             auto returnValue = TMethodProvider::response_suffix(atc, args...);
+
+            atc.check_for_ok();
+
             return returnValue;
         }
 

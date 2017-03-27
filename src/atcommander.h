@@ -371,7 +371,7 @@ public:
             {
                 unget(_ch);
 #ifdef DEBUG_ATC_MATCH
-                fstd::clog << "false" << fstd::endl;
+                fstd::clog << "false   preset='" << ch << "',incoming='" << _ch << '\'' << fstd::endl;
 #endif
                 return false;
             }

@@ -113,10 +113,20 @@ int main()
 
     ATCommander atc(icserial, ocserial);
 
+    uint8_t power_level = 1;
+
+    //power_level = atc.status<sim808::phone_functionality>();
+
+    //echoThread.start(echo2);
+    //queue.dispatch();
+
     sim808::experimental::reset(atc);
 
     // turn off echo mode
     atc.command_with_echo<sim808::echo>(0);
+
+    // make sure radios are on
+    power_level = atc.status<sim808::phone_functionality>();
 
     char buf[128];
 
@@ -130,6 +140,14 @@ int main()
     // bringup wireless connection to GPRS
     //atc.command<simcom::generic_at::bringup_wireless>();
     atc.command<sim808::bearer_settings>(1, 1);
+
+    if(power_level != 1)
+    {
+        // FIX: Need to fix SFINAE response dispatcher
+        // It seems it doesn't like a reset right off the bat
+        //atc.command<sim808::phone_functionality>(1);
+        //atc.command<sim808::phone_functionality>(1, 1);
+    }
 
     typedef sim808::http http;
 
@@ -151,7 +169,10 @@ int main()
     sprintf(notify, "{\"text\": \"%s\"}", "ATCommander ONLINE (built @ " __DATE__ " "  __TIME__ ")");
     atc.command<http::data>(notify);
 
-    http::action::experimental::post(atc);
+    if(power_level == 1)
+        http::action::experimental::post(atc);
+    else
+        clog << "Radios off, not sending POST" << endl;
 
     // leave initialized for now, since we are developing still
     //atc.command<http::term>();
