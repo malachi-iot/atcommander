@@ -384,7 +384,7 @@ public:
     }
 
 
-    const char* input_match_experimental(const char** keywords)
+    const char* input_match(const char** keywords)
     {
         layer3::MultiMatcher matcher(keywords);
         int ch;
@@ -419,7 +419,7 @@ public:
 
     // FIX: Right now hard-wired to full-line input matching
     // FIX: Also preallocates big buffer for that
-    const char* input_match(const char** keywords)
+    const char* input_match_old(const char** keywords)
     {
         char buf[128];
 

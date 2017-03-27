@@ -55,7 +55,7 @@ public:
         {
             atc.ignore_whitespace_and_newlines();
             static const char* keywords_atz[] = { ATCommander::AT, ATCommander::OK, nullptr };
-            const char* matched = atc.input_match_experimental(keywords_atz);
+            const char* matched = atc.input_match(keywords_atz);
             return matched;
         }
 

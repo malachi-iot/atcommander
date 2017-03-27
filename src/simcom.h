@@ -219,7 +219,7 @@ public:
                         // b) SEND_FAIL is coming
                         atcf >> mux_channel;
 
-                        const char* matched = atc.input_match_experimental(keywords);
+                        const char* matched = atc.input_match(keywords);
 
                         result = matched != SEND_FAIL;
                     }
@@ -242,7 +242,7 @@ public:
                 }
                 else
                 {
-                    const char* matched = atc.input_match_experimental(keywords);
+                    const char* matched = atc.input_match(keywords);
 
                     if(matched == DATA_ACCEPT)
                     {

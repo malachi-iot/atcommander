@@ -40,46 +40,22 @@ streamsize bufferedsoftserial_is_avail(void* ctx)
     return ((BufferedSoftSerial*)ctx)->readable();
 }
 
-static char bufferedsoftserial_cached = 0;
-
 int bufferedsoftserial_sbumpc(void* ctx)
 {
     auto stream = (BufferedSoftSerial*)ctx;
-
-    if(bufferedsoftserial_cached)
-    {
-        char temp = bufferedsoftserial_cached;
-        bufferedsoftserial_cached = 0;
-        return temp;
-    }
 
     while(!stream->readable()) { Thread::yield(); }
 
     return stream->getc();
 }
 
-// WARNING: this doesn't interact with the "read" API call
-// so be sure you only rely this fake-peek behavior when NOT
-// using that call
-int bufferedsoftserial_sgetc(void* ctx)
-{
-    auto stream = (BufferedSoftSerial*)ctx;
-
-    if(bufferedsoftserial_cached) return bufferedsoftserial_cached;
-
-    if(stream->readable())
-    {
-        return bufferedsoftserial_cached = stream->getc();
-    }
-
-    return -1;
-}
 
 ostream ocserial(serial);
 istream icserial(serial,
     bufferedsoftserial_is_avail,
-    bufferedsoftserial_sbumpc,
-    bufferedsoftserial_sgetc);
+    bufferedsoftserial_sbumpc);
+    //,
+    //bufferedsoftserial_sgetc);
 
 static void echo2()
 {
@@ -119,20 +95,6 @@ struct sim808 :
     public _3gpp::_27007
     {};
 
-// Old one, unused.  Keep around until new one leaves experimental status
-void reset_with_optional_echo(ATCommander& atc)
-{
-    const char ATZ[] = "ATZ";
-    const char* keywords_atz[] = { ATZ, "OK", nullptr };
-    atc << ATZ;
-    atc.send();
-    atc.ignore_whitespace_and_newlines();
-    if(atc.input_match(keywords_atz) == ATZ)
-    {
-        clog << "Initialized (was in ATE1 mode)\r\n";
-        atc.check_for_ok();
-    }
-}
 
 int main()
 {
