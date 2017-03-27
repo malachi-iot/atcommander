@@ -40,17 +40,46 @@ streamsize bufferedsoftserial_is_avail(void* ctx)
     return ((BufferedSoftSerial*)ctx)->readable();
 }
 
-int bufferedsoftserial_getc(void* ctx)
+static char bufferedsoftserial_cached = 0;
+
+int bufferedsoftserial_sbumpc(void* ctx)
 {
     auto stream = (BufferedSoftSerial*)ctx;
 
-    while(!stream->readable()) { Thread::wait(10); }
+    if(bufferedsoftserial_cached)
+    {
+        char temp = bufferedsoftserial_cached;
+        bufferedsoftserial_cached = 0;
+        return temp;
+    }
+
+    while(!stream->readable()) { Thread::yield(); }
 
     return stream->getc();
 }
 
+// WARNING: this doesn't interact with the "read" API call
+// so be sure you only rely this fake-peek behavior when NOT
+// using that call
+int bufferedsoftserial_sgetc(void* ctx)
+{
+    auto stream = (BufferedSoftSerial*)ctx;
+
+    if(bufferedsoftserial_cached) return bufferedsoftserial_cached;
+
+    if(stream->readable())
+    {
+        return bufferedsoftserial_cached = stream->getc();
+    }
+
+    return -1;
+}
+
 ostream ocserial(serial);
-istream icserial(serial, bufferedsoftserial_is_avail, bufferedsoftserial_getc);
+istream icserial(serial,
+    bufferedsoftserial_is_avail,
+    bufferedsoftserial_sbumpc,
+    bufferedsoftserial_sgetc);
 
 static void echo2()
 {
