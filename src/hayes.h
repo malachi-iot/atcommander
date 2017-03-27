@@ -56,16 +56,6 @@ public:
             atc.ignore_whitespace_and_newlines();
             static const char* keywords_atz[] = { ATCommander::AT, ATCommander::OK, nullptr };
             const char* matched = atc.input_match_experimental(keywords_atz);
-#ifdef DEBUG_ATC_MATCH
-            if(matched == nullptr)
-            {
-                fstd::clog << "No match found" << fstd::endl;
-            }
-            else
-            {
-                fstd::clog << "Matched: " << matched << fstd::endl;
-            }
-#endif
             return matched;
         }
 

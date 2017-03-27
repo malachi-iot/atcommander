@@ -31,6 +31,7 @@ namespace fstd = FactUtilEmbedded::std;
 #endif
 // FIX: really should splice in a different istream
 //#define DEBUG_SIMULATED
+#define DEBUG_ATC_CONTEXT
 
 
 
@@ -117,6 +118,40 @@ protected:
 
 
 public:
+    class
+    {
+#ifdef DEBUG_ATC_CONTEXT
+        char localBuf[2];
+        const char* cmd;
+#endif
+    public:
+
+        void set(const char* cmd)
+        {
+#ifdef DEBUG_ATC_CONTEXT
+            this->cmd = cmd;
+#endif
+        }
+
+
+        void set(char cmd)
+        {
+#ifdef DEBUG_ATC_CONTEXT
+            this->cmd = localBuf;
+            localBuf[0] = cmd;
+            localBuf[1] = 0;
+#endif
+        }
+
+        void dump(fstd::ostream& clog)
+        {
+#ifdef DEBUG_ATC_CONTEXT
+            fstd::clog << '(' << AT << cmd << ") ";
+#else
+#endif
+        }
+
+    } debug_context;
 
     class _error_struct
     {
@@ -197,6 +232,8 @@ public:
     {
         int ch = _get();
 #ifdef DEBUG_ATC_ECHO
+        // TODO: buffer this output and spit out only at newlines, very reminiscent of how actual clog
+        // should work
         fstd::clog.put(ch);
 #endif
         return ch;
@@ -262,7 +299,8 @@ public:
     {
         int ch = get();
         bool matched = ch == match;
-#ifdef DEBUG_ATC_INPUT
+#ifdef DEBUG_ATC_MATCH
+        debug_context.dump(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = " << (matched ? "true" : "false") << fstd::endl;
 #endif
         return matched;
@@ -272,7 +310,8 @@ public:
     {
         char ch;
 
-#ifdef DEBUG_ATC_INPUT
+#ifdef DEBUG_ATC_MATCH
+        debug_context.dump(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = ";
 #endif
 
@@ -282,14 +321,14 @@ public:
             if(ch != _ch)
             {
                 unget(_ch);
-#ifdef DEBUG_ATC_INPUT
+#ifdef DEBUG_ATC_MATCH
                 fstd::clog << "false" << fstd::endl;
 #endif
                 return false;
             }
         }
 
-#ifdef DEBUG_ATC_INPUT
+#ifdef DEBUG_ATC_MATCH
         fstd::clog << "true" << fstd::endl;
 #endif
         return true;
@@ -305,6 +344,19 @@ public:
         {
             if(!matcher.parse(ch)) break;
         }
+
+#ifdef DEBUG_ATC_MATCH
+        debug_context.dump(fstd::clog);
+
+        if(!matcher.is_matched())
+        {
+            fstd::clog << "No match found" << fstd::endl;
+        }
+        else
+        {
+            fstd::clog << "Matched: " << matcher.matched() << fstd::endl;
+        }
+#endif
 
         if(matcher.is_matched())
         {

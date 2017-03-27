@@ -70,12 +70,14 @@ protected:
         {
             atc.write(ATCommander::AT, 2);
             atc.write(s, N - 1);
+            atc.debug_context.set(s);
         }
 
         static void prefix(ATCommander& atc, char c)
         {
             atc.write(ATCommander::AT, 2);
             atc.put(c);
+            atc.debug_context.set(c);
         }
     };
 

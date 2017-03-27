@@ -6,7 +6,7 @@
 #include <fact/iostream.h>
 
 //#define DEBUG_ATC_OUTPUT
-#define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
 // TODO: consider moving these includes into an atcommander folder

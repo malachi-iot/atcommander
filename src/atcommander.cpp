@@ -14,11 +14,11 @@ bool ATCommander::check_for_ok()
     ignore_whitespace_and_newlines();
 
 #ifdef FEATURE_OK_ERROR_CHECK
-    const char* result = input_match(OK_OR_ERROR);
+    const char* result = input_match_experimental(OK_OR_ERROR);
 
     // NOTE: cuz input_match (multi) grabs whole line right now we disable skip_newline
     // however input_match will be changing that behavior
-    //skip_newline();
+    skip_newline();
 
     if(result == OK)
     {
