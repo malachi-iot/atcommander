@@ -131,35 +131,37 @@ public:
             static const bool Has = sizeof(Test<T>(0)) == sizeof(char);
         };
 
-        // Default response behavior is only to check for OK after a command
-        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
-        static bool response(ATCommander& atc)
-        {
-            //response_helper<TMethodProvider>();
-            return atc.check_for_ok();
-        }
+        template <class T, class ...TArgs>
+        static void response_helper(typename fstd::enable_if<!
+                                    fstd::is_function<decltype(T::response)(TArgs...)>::value>::type* = 0)
 
-        template <class T>
-        static auto response_helper() ->
-                typename fstd::enable_if<!fstd::is_function<typename T::response>::value, typename T::CMD>::type
         {
             fstd::clog << "Has NO response helper" << fstd::endl;
         }
 
-        template <class T>
-        static auto response_helper() ->
-                typename fstd::enable_if<fstd::is_function<typename T::response>::value, typename T::response>::type
+        template <class T, class ...TArgs>
+        static void response_helper(typename fstd::enable_if<
+                                    fstd::is_function<decltype(T::response)(TArgs...)>::value>::type* = 0)
+
         {
             fstd::clog << "Has a response helper" << fstd::endl;
             //auto val = fstd::is_function<typename TMethodProvider::response>::value;
         }
 
 
+        // Default response behavior is only to check for OK after a command
+        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
+        static bool response(ATCommander& atc)
+        {
+            return atc.check_for_ok();
+        }
+
         // TODO: be mindful, this might be a C++14 only feature
         template <class ...TArgs>
         //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
         static void response(ATCommander& atc, TArgs...args)
         {
+            //command<TProvider, TMethodProvider>::response_helper<TMethodProvider>();
             // FIX: Need to do some SFINAE magic here to call check_for_ok
             // if TMethodProvider::response doesn't exist
             TMethodProvider::response(atc, args...);
