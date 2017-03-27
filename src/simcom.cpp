@@ -14,7 +14,6 @@ constexpr char generic_at::CMGR[]; // receive SMS
 constexpr char generic_at::CMGS[]; // send SMS
 
 constexpr char generic_at::CIPRXGET[];
-constexpr char generic_at::CIPSEND[];
 constexpr char generic_at::CIPSTART[];
 constexpr char generic_at::CIPSTATUS[];
 constexpr char generic_at::CIPCLOSE[];
@@ -33,6 +32,7 @@ typedef generic_at::http    http;
 constexpr char ip::start::CMD[];
 constexpr char ip::ssl::CMD[];
 constexpr char ip::mux::CMD[];
+constexpr char ip::send::CMD[];
 
 constexpr char generic_at::http_action::CMD[];
 constexpr char generic_at::http_read::CMD[];

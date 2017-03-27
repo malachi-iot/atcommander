@@ -8,6 +8,8 @@
 #include "atcommander.h"
 #include "atbuilder.h"
 
+#include <ctype.h>
+
 // http://m2msupport.net/m2msupport/tutorial-for-simcom-m2m-modules/
 namespace simcom
 {
@@ -22,7 +24,6 @@ class generic_at
     static constexpr char CMGR[] = "+CMGR"; // receive SMS
     static constexpr char CMGS[] = "+CMGR"; // send SMS
     static constexpr char CIPRXGET[] = "+CIPRXGET";
-    static constexpr char CIPSEND[] = "+CIPSEND";
     static constexpr char CIPSTART[] = "+CIPSTART";
     static constexpr char CIPSTATUS[] = "+CIPSTATUS";
     static constexpr char CIPCLOSE[] = "+CIPCLOSE";
@@ -122,6 +123,8 @@ public:
 
     struct ip
     {
+        typedef uint16_t size_t;
+
         struct mux
         {
             static constexpr char CMD[] = "+CIPMUX";
@@ -153,6 +156,132 @@ public:
             }
 
             // will be an assign operation
+        };
+
+
+        struct send
+        {
+            // It appears COMMAND mode takes no size parameter, and instead relies on
+            // control keys to detect end of data (ESC, ctrl-z).  So this is more of
+            // a cooked text mode
+            // It appears ASSIGN mode allows us to specify length and no special "cooked"
+            // control keys (ESC, ctrl-z).  So this is a raw binary mode
+            static constexpr char CMD[] = "+CIPSEND";
+
+            // raw mode
+            static void suffix(ATC atc, size_t length)
+            {
+                atc << length;
+            }
+
+            // raw mode
+            static void suffix(ATC atc, uint8_t mux, size_t length)
+            {
+                atc << mux << ',' << length;
+            }
+
+            // FIX: response modes not yet implemented
+            // +CIPQSEND=0 gives us [n,]SEND OK
+            // +CIPQSEND=1 gives us DATA ACCEPT: [n,]length
+            // [n,] only present when +CIPMUX=1
+            // +CIPMUX=1 not valid for command mode, only for assign mode
+
+            /// EXPERIMENTAL and not well tested
+            /// Autodetects CIPQSEND mode, but you have to manually specify MUX mode
+            /// \param atc
+            /// \param mux
+            static bool response(ATC atc, bool mux)
+            {
+                static constexpr char SEND_FAIL[] = "SEND FAIL";
+                static constexpr char SEND_OK[] = "SEND OK";
+                static constexpr char DATA_ACCEPT[] = "DATA ACCEPT";
+
+                static const char* keywords[] = { DATA_ACCEPT, SEND_FAIL, SEND_OK, nullptr };
+
+                bool result;
+
+                // since mux result is in awkward location, we have to be
+                // tricky about detecting SEND_FAIL (it always prepends [n,] in muxmode
+                // regardless of qsend mode
+                if(mux)
+                {
+                    ATCommander::_experimental::Formatter atcf(atc);
+
+                    atcf.eat_delimiters(",:\n");
+
+                    uint8_t mux_channel;
+
+                    if(isdigit(atc.peek()))
+                    {
+                        // if we have a digit here, then mux is leading
+                        // which means either:
+                        // a) qsend mode = 0
+                        // b) SEND_FAIL is coming
+                        atcf >> mux_channel;
+
+                        const char* matched = atc.input_match_experimental(keywords);
+
+                        result = matched != SEND_FAIL;
+                    }
+                    else
+                    {
+                        // if no digit here, it won't be a SEND_FAIL because in mux
+                        // mode SEND_FAIL is preceded by [n,] so instead we know
+                        // it's going to be DATA_ACCEPT
+                        atcf >> DATA_ACCEPT;
+                        atcf >> mux_channel;
+
+                        uint16_t length;
+
+                        atc >> length;
+
+                        result = atc.error.at_result();
+                    }
+
+                    atc.input_newline();
+                }
+                else
+                {
+                    const char* matched = atc.input_match_experimental(keywords);
+
+                    if(matched == DATA_ACCEPT)
+                    {
+                        uint16_t length;
+                        atc >> ':' >> length;
+                    }
+
+                    result = matched != SEND_FAIL;
+                }
+
+                return result;
+            }
+
+
+            // raw mode
+            typedef ATB::assign<send> assign;
+
+            // cooked mode
+            typedef ATB::command_auto<send> command;
+        };
+
+        struct send_mode
+        {
+            static constexpr char CMD[] = "+CIPQSEND";
+
+            typedef ATB::assign_bool<send_mode> command;
+            typedef ATB::status_bool<send_mode> status;
+        };
+
+        struct transparent
+        {
+            // Unclear whether SIM808 supports mux=1 + transparent mode
+            // It appears transparent mode means send *everything* thru modem after CIPSTART
+            // and "+++" will terminate it.  Reference:
+            // https://bigdanzblog.wordpress.com/2015/03/31/arduino-gps-gsmgprs-transmitting-gps-coordinates-via-udp-to-google-maps/
+            static constexpr char CMD[] = "+CIPMODE";
+
+            typedef ATB::assign_bool<transparent> command;
+            typedef ATB::status_bool<transparent> status;
         };
 
         struct ssl

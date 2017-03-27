@@ -171,6 +171,45 @@ public:
     } error;
 
 
+    struct _experimental
+    {
+        typedef uint8_t input_processing_flags;
+
+        static constexpr input_processing_flags eat_delimiter_bit = 0x01;
+
+        //input_processing_flags _input_processing_flags;
+
+        class Formatter
+        {
+            ATCommander& atc;
+            input_processing_flags flags;
+
+            template <typename T>
+            friend Formatter& operator >>(Formatter& atc, T);
+
+            template <typename T>
+            friend Formatter& operator <<(Formatter& atc, T);
+
+        public:
+            Formatter(ATCommander& atc) : atc(atc) {}
+            ~Formatter() { atc.reset_delimiters(); }
+
+            void set_eat_delimiter()
+            { flags |= eat_delimiter_bit; }
+
+            bool eat_delimiter()
+            { return flags & eat_delimiter_bit; }
+
+            void eat_delimiters(const char* delimiters)
+            {
+                atc.set_delimiter(delimiters);
+                set_eat_delimiter();
+            }
+
+        };
+    } experimental;
+
+
 #ifdef DEBUG_SIMULATED
     FactUtilEmbedded::layer1::CircularBuffer<char, 128> debugBuffer;
 #endif
@@ -273,6 +312,16 @@ public:
         //debugBuffer.put(ch);
 #else
         cache = ch;
+#endif
+    }
+
+    int peek()
+    {
+#ifdef DEBUG_SIMULATED
+        // FIX: quite broken.  really need that debugBuffer...
+        return cache;
+#else
+        return cin.peek();
 #endif
     }
 
@@ -687,6 +736,26 @@ inline ATCommander& operator>>(ATCommander& atc, const char* matchValue)
         atc.set_error("match", matchValue);
     }
     return atc;
+}
+
+
+template <typename T>
+inline ATCommander::_experimental::Formatter& operator>>(ATCommander::_experimental::Formatter& atcf, T value)
+{
+    atcf.atc >> value;
+
+    if(atcf.eat_delimiter())
+        atcf.atc.get();
+
+    return atcf;
+}
+
+
+template <typename T>
+inline ATCommander::_experimental::Formatter& operator<<(ATCommander::_experimental::Formatter& atcf, T value)
+{
+    atcf.atc << value;
+    return atcf;
 }
 
 /*

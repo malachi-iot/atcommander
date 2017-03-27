@@ -39,5 +39,11 @@ TEST_CASE( "SIMCOM commands", "[simcom]" )
             atc.command<ip::mux>(true);
             atc.status<ip::mux>();
         }
+        GIVEN("SEND")
+        {
+            ip::send::assign::request(atc, 12);
+            ip::send::command::request(atc);
+            ip::send::assign::response(atc, true);
+        }
     }
 }
