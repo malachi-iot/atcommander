@@ -1,6 +1,7 @@
 # CLion metafiles
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+**/.idea/vcs.xml
 
 # QT-creator user config files
 *.user
