@@ -64,8 +64,9 @@ protected:
     };
 
 
-    struct _command_base
+    class _command_base
     {
+    protected:
         template <typename T, size_t N>
         static void prefix(ATCommander& atc, T (&s)[N])
         {
@@ -85,12 +86,15 @@ protected:
 public:
     //typedef ATCommander::_command_base command_base;
     template <class TProvider, class TMethodProvider = TProvider>
-    struct command : _command_base
+    class command : _command_base
     {
+    protected:
         static void prefix(ATCommander& atc)
         {
             _command_base::prefix(atc, TProvider::CMD);
         }
+
+    public:
 
         template <class ...TArgs>
         static void request(ATCommander& atc, TArgs...args)
@@ -101,46 +105,18 @@ public:
         }
 
 
-        /*
-        void response(ATCommander &atc)
-        {
-            atc.check_for_ok();
-        } */
-
-        /*
-        // as discussed http://stackoverflow.com/questions/257288/is-it-possible-to-write-a-template-to-check-for-a-functions-existence
-        // and here http://stackoverflow.com/questions/87372/check-if-a-class-has-a-member-function-of-a-given-signature
-        template <typename T>
-        struct func_exists
-        {
-            typedef char one;
-            typedef long two;
-
-            template <typename C> static one test( typeof(&C::response) ) ;
-            template <typename C> static two test(...);
-
-            enum { value = sizeof(test<T>(0)) == sizeof(char) };
-        }; */
-
-        // Works, but don't need it - overloading does the trick
-        template<typename T>
-        struct HasResponseMethod
-        {
-            template<typename U, size_t (U::*)() const> struct SFINAE {};
-            template<typename U> static char Test(SFINAE<U, &U::response>*);
-            template<typename U> static int Test(...);
-            static const bool Has = sizeof(Test<T>(0)) == sizeof(char);
-        };
-
+    protected:
+        // Activate when response function with specified signature is present in T
         template <class T, typename ...TArgs>
-        static auto _response_helper(int, ATC atc, TArgs...args) -> decltype(T::response(atc, args...), void())
+        static auto _response_helper(int, ATC atc, TArgs...args) -> decltype(T::response(atc, args...))
         {
 #ifdef DEBUG_ATC_INPUT
             fstd::clog << "Has specialized response" << fstd::endl;
 #endif
-            T::response(atc, args...);
+            return T::response(atc, args...);
         }
 
+        // Activate when response function is not present in T
         template <class T>
         static bool _response_helper(long, ATC atc)
         {
@@ -149,40 +125,12 @@ public:
 #endif
             return atc.check_for_ok();
         }
+    public:
 
-        template <class T, typename ...TArgs>
-        static auto response_helper(ATC atc, TArgs...args) -> decltype(_response_helper<T>(0, atc, args...), void())
-        {
-            _response_helper<T>(0, atc, args...);
-        }
-
-
-        /*
-        // Default response behavior is only to check for OK after a command
-        // oftentimes this is NOT what you want, so be sure to overload (override-ish)
-        static bool response(ATCommander& atc)
-        {
-            return atc.check_for_ok();
-        } */
-
-        // TODO: be mindful, this might be a C++14 only feature
         template <class ...TArgs>
-        //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
-        static void response(ATCommander& atc, TArgs...args)
+        static auto response(ATCommander& atc, TArgs...args) -> decltype(_response_helper<TMethodProvider>(0, atc, args...))
         {
-            response_helper<TMethodProvider>(atc, args...);
-            // FIX: Need to do some SFINAE magic here to call check_for_ok
-            // if TMethodProvider::response doesn't exist
-            //TMethodProvider::response(atc, args...);
-            /*
-            auto value = HasResponseMethod<TMethodProvider>::Has;
-
-            if(value)
-            //auto returnValue = TMethodProvider::response(atc, args...);
-            //return returnValue;
-                TMethodProvider::response(atc, args...);
-            else
-                atc.check_for_ok(); */
+            return _response_helper<TMethodProvider>(0, atc, args...);
         }
 
         // TODO: be mindful, this might be a C++14 only feature
@@ -222,10 +170,12 @@ public:
     template <class TProvider, class TMethodProvider = TProvider>
     struct assign : command<TProvider, TMethodProvider>
     {
+        typedef command<TProvider, TMethodProvider> base_t;
+
         template <class ...TArgs>
         static void request(ATCommander& atc, TArgs...args)
         {
-            command<TProvider>::prefix(atc);
+            base_t::prefix(atc);
             atc << '=';
             TMethodProvider::suffix(atc, args...);
             atc.send();
