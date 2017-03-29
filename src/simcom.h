@@ -167,6 +167,7 @@ public:
             static constexpr char CMD[] = "+CIPSHUT";
         };
 
+        // NOT TESTED
         struct receive
         {
             static constexpr char CMD[] = "+CIPRXGET";
@@ -177,10 +178,6 @@ public:
             // (direct TE messages would be a lot of unsolicited messages...and the docs don't say
             // if they are qualified or if they just randomly show up with binary data out of the blue)
             // mode 0
-            static void suffix(ATC atc)
-            {
-                atc << '0';
-            }
 
             // enable manual receive mode
             // mode 1
@@ -190,28 +187,58 @@ public:
                 if(mux >= 0) atc << ',' << mux;
             }
 
-            // mode 2 enable throttled manual receive mode, data cannot exceed 1460 bytes at a time
-            // mode 3 same as mdoe 2, but "HEX mode" with 730 byte maximum
-            static void suffix(ATC atc, uint8_t mode, int mux, uint16_t request_length, uint16_t confirmed_length)
+            static void response_helper(ATC atc, uint8_t mode, int mux)
+            {
+                atc >> CMD >> ": ";
+                // NOTE: keep an eye on delimiters here
+                atc._input_match(mode);
+                atc >> ',';
+                if(mux >= 0) atc._input_match((uint16_t )mux);
+            }
+
+            // mode 1 with explicit ip & port
+            static void response(ATC atc, int mux, char* ip, char* port)
             {
                 ATCommander::_experimental::Formatter atcf(atc);
 
+                atcf.eat_delimiters(":\"");
+
+                response_helper(atc, 1, mux);
+
+                atcf >> ip >> port;
+            }
+
+            // mode 2 enable throttled manual receive mode, data cannot exceed 1460 bytes at a time
+            // mode 3 same as mdoe 2, but "HEX mode" with 730 byte maximum
+            static void response(ATC atc, uint8_t mode, int mux, uint16_t& request_length, uint16_t& confirmed_length)
+            {
+                // TODO: Assert mode is 2 or 3
+                response_helper(atc, mode, mux);
+
                 // prepends each output with a comma
-                atcf.set_auto_delimit();
 
-                // TODO: do debug asserts that mode is 2 or 3 here
-                atc << mode;
+                atc >> request_length >> ',';
+                atc >> confirmed_length;
+            }
 
-                if(mux >= 0) atcf << mux;
+            // mode 2, 3 with explicit IP address & port
+            static void response(ATC atc, uint8_t mode, int mux, uint16_t& request_length, uint16_t& confirmed_length,
+                                 char* ip, char* port)
+            {
+                ATCommander::_experimental::Formatter atcf(atc);
 
-                atcf << request_length;
-                atcf << confirmed_length;
+                response(atc, mode, mux, request_length, confirmed_length);
+
+                atcf.eat_delimiters(",:\"");
+                atc >> ip >> port;
             }
 
             // mode 4 query how much data is not read
-            static void suffix(ATC atc, int mux, uint16_t confirmed_length)
+            static void response(ATC atc, int mux, uint16_t confirmed_length)
             {
+                response_helper(atc, 4, mux);
 
+                atc >> ',' >> confirmed_length;
             }
         };
 
