@@ -71,6 +71,29 @@ public:
     }
 
 
+    // sets PDP context info:
+    //  APN
+    //  username
+    //  password
+    // UNTESTED
+    class apn_credentials
+    {
+        static constexpr char CMD[] = "+CSTT";
+
+        static void suffix(ATC atc, const char* apn)
+        {
+            atc << '"' << apn << '"';
+        }
+
+        static void suffix(ATC atc, const char* apn, const char* username, const char* password)
+        {
+            // assert username & password are not NULL
+            suffix(atc, apn);
+            atc << ",\"" << username << ANDTHEN << password;
+        }
+    };
+
+
     struct sms
     {
         struct send
