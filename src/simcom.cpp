@@ -6,20 +6,8 @@
 
 namespace simcom {
 
-constexpr char generic_at::CIPMODE[];
-
 constexpr char generic_at::CMGF[];
 
-constexpr char generic_at::CMGR[]; // receive SMS
-constexpr char generic_at::CMGS[]; // send SMS
-
-constexpr char generic_at::CIPRXGET[];
-constexpr char generic_at::CIPSTART[];
-constexpr char generic_at::CIPSTATUS[];
-constexpr char generic_at::CIPCLOSE[];
-constexpr char generic_at::CIPSHUT[];
-
-constexpr char generic_at::CDNSGIP[];
 constexpr char generic_at::TCP[];
 constexpr char generic_at::UDP[];
 constexpr char generic_at::ANDTHEN[];

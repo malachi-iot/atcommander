@@ -19,15 +19,7 @@ class generic_at
     typedef ATCommander& ATC;
     typedef ATBuilder ATB;
 
-    static constexpr char CIPMODE[] = "+CIPMODE";
     static constexpr char CMGF[] = "+CMGF";
-    static constexpr char CMGR[] = "+CMGR"; // receive SMS
-    static constexpr char CMGS[] = "+CMGR"; // send SMS
-    static constexpr char CIPRXGET[] = "+CIPRXGET";
-    static constexpr char CIPSTART[] = "+CIPSTART";
-    static constexpr char CIPSTATUS[] = "+CIPSTATUS";
-    static constexpr char CIPCLOSE[] = "+CIPCLOSE";
-    static constexpr char CIPSHUT[] = "+CIPSHUT";
 
     static constexpr char CDNSGIP[] = "+CDNSGIP"; // IP lookup of a given domain name
 
@@ -36,14 +28,6 @@ class generic_at
     static constexpr char ANDTHEN[] = "\",\"";
 
 public:
-    static void set_transparent(ATC atc, bool transparent)
-    {
-        atc.cout << atc.AT << CIPMODE << '=' << (transparent ? '1' : '0') << fstd::endl;
-        atc.check_for_ok();
-        // cin >> "OK"
-    }
-
-
     // mode '1' = text, '0' = pdu
     static void set_sms_format(ATC atc, char mode)
     {
@@ -56,20 +40,6 @@ public:
         atc.send_assign("+CSDH", show ? '1' : '0');
         atc.check_for_ok();
     }
-
-    // Not ready yet
-    static void recv_sms(ATC atc, uint8_t smsStorePos)
-    {
-        atc.send_assign(CMGR, smsStorePos);
-        atc.recv_request_echo_prefix(CMGR);
-    }
-
-
-    static void send_sms(ATC atc)
-    {
-        atc.do_assign(CMGS);
-    }
-
 
     // sets PDP context info:
     //  APN
@@ -156,6 +126,12 @@ public:
             typedef ATB::status_bool<mux> status;
         };
 
+        struct status
+        {
+            static constexpr char CMD[] = "+CIPSTATUS";
+
+        };
+
         struct start
         {
             static constexpr char CMD[] = "+CIPSTART";
@@ -179,6 +155,16 @@ public:
             }
 
             // will be an assign operation
+        };
+
+        struct close
+        {
+            static constexpr char CMD[] = "+CIPCLOSE";
+        };
+
+        struct shutdown
+        {
+            static constexpr char CMD[] = "+CIPSHUT";
         };
 
         struct receive
