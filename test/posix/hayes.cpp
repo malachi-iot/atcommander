@@ -13,7 +13,8 @@ TEST_CASE( "Simple hayes commands", "[hayes]" )
 
         // Won't actually work in real world, because this only looks for OK
         // and not subsequent buffer return
-        atc.command<hayes::v250::information>(1);
+        //atc.command<hayes::v250::information>(1);
+        hayes::v250::information::command::request(atc, '1');
     }
     GIVEN("Reset")
     {

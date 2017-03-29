@@ -4,6 +4,7 @@
 
 class ATBuilder
 {
+    typedef ATCommander& ATC;
 protected:
     template <typename TResponse>
     struct status_helper_autoresponse
@@ -131,40 +132,48 @@ public:
             static const bool Has = sizeof(Test<T>(0)) == sizeof(char);
         };
 
-        template <class T, class ...TArgs>
-        static void response_helper(typename fstd::enable_if<!
-                                    fstd::is_function<decltype(T::response)(TArgs...)>::value>::type* = 0)
-
+        template <class T, typename ...TArgs>
+        static auto _response_helper(int, ATC atc, TArgs...args) -> decltype(T::response(atc, args...), void())
         {
-            fstd::clog << "Has NO response helper" << fstd::endl;
+#ifdef DEBUG_ATC_INPUT
+            fstd::clog << "Has specialized response" << fstd::endl;
+#endif
+            T::response(atc, args...);
         }
 
-        template <class T, class ...TArgs>
-        static void response_helper(typename fstd::enable_if<
-                                    fstd::is_function<decltype(T::response)(TArgs...)>::value>::type* = 0)
-
+        template <class T>
+        static bool _response_helper(long, ATC atc)
         {
-            fstd::clog << "Has a response helper" << fstd::endl;
-            //auto val = fstd::is_function<typename TMethodProvider::response>::value;
+#ifdef DEBUG_ATC_INPUT
+            fstd::clog << "Has no specialized response" << fstd::endl;
+#endif
+            return atc.check_for_ok();
+        }
+
+        template <class T, typename ...TArgs>
+        static auto response_helper(ATC atc, TArgs...args) -> decltype(_response_helper<T>(0, atc, args...), void())
+        {
+            _response_helper<T>(0, atc, args...);
         }
 
 
+        /*
         // Default response behavior is only to check for OK after a command
         // oftentimes this is NOT what you want, so be sure to overload (override-ish)
         static bool response(ATCommander& atc)
         {
             return atc.check_for_ok();
-        }
+        } */
 
         // TODO: be mindful, this might be a C++14 only feature
         template <class ...TArgs>
         //static auto response(ATCommander& atc, TArgs...args) -> decltype(TMethodProvider::response(atc, args...))
         static void response(ATCommander& atc, TArgs...args)
         {
-            //command<TProvider, TMethodProvider>::response_helper<TMethodProvider>();
+            response_helper<TMethodProvider>(atc, args...);
             // FIX: Need to do some SFINAE magic here to call check_for_ok
             // if TMethodProvider::response doesn't exist
-            TMethodProvider::response(atc, args...);
+            //TMethodProvider::response(atc, args...);
             /*
             auto value = HasResponseMethod<TMethodProvider>::Has;
 

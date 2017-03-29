@@ -19,8 +19,8 @@ TEST_CASE( "SIMCOM commands", "[simcom]" )
         }
         GIVEN("GET")
         {
-            //simcom::generic_at::http_action::command::request(atc, 0);
-            atc.command<simcom::generic_at::http_action>(0);
+            simcom::generic_at::http_action::command::request(atc, 0);
+            //atc.command<simcom::generic_at::http_action>(0);
             //atc.command<hayes::standard_at::reset>();
         }
         GIVEN("SSL")
