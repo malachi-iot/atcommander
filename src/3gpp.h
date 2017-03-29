@@ -129,6 +129,21 @@ public:
         typedef ATB::assign<phone_functionality> command;
         typedef ATB::status<phone_functionality> status;
     };
+
+    struct serial_number_request
+    {
+        static constexpr char CMD[] = "+CGSN";
+
+        // NOT TESTED
+        static void response(ATC atc, char* serial_number)
+        {
+            atc >> serial_number;
+            atc.input_newline();
+            atc.check_for_ok();
+        }
+
+        typedef ATB::command<serial_number_request> command;
+    };
 };
 
 }

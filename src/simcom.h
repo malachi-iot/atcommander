@@ -158,6 +158,30 @@ public:
             // will be an assign operation
         };
 
+        struct receive
+        {
+            static constexpr char CMD[] = "+CIPRXGET";
+
+            // enable manual receive mode
+            // mode 1
+            static void suffix(ATC atc, uint8_t mux)
+            {
+
+            }
+
+            // mode 2 enable throttled manual receive mode, data cannot exceed 1460 bytes at a time
+            // mode 3 same as mdoe 2, but "HEX mode" with 730 byte maximum
+            static void suffix(ATC atc, uint8_t mode, uint8_t mux, uint16_t request_length, uint16_t confirmed_length)
+            {
+
+            }
+
+            // mode 4 query how much data is not read
+            static void suffix(ATC atc, uint8_t mux, uint16_t confirmed_length)
+            {
+
+            }
+        };
 
         struct send
         {
@@ -270,6 +294,16 @@ public:
 
             typedef ATB::assign_bool<send_mode> command;
             typedef ATB::status_bool<send_mode> status;
+        };
+
+
+        // from docs: "Show Remote IP Address and Port When Received Data" [interacts with +CIPRXGET]
+        // TODO: name better once I understand what this does better
+        struct cipsrip
+        {
+            static constexpr char CMD[] = "+CIPSRIP";
+
+            typedef ATB::assign_bool<cipsrip> command;
         };
 
         struct transparent
