@@ -162,22 +162,45 @@ public:
         {
             static constexpr char CMD[] = "+CIPRXGET";
 
+            // disable manual receive mode
+            // docs call this "normal mode", and "data will be pushed to TE directly"
+            // but so far I haven't discovered how that could work
+            // (direct TE messages would be a lot of unsolicited messages...and the docs don't say
+            // if they are qualified or if they just randomly show up with binary data out of the blue)
+            // mode 0
+            static void suffix(ATC atc)
+            {
+                atc << '0';
+            }
+
             // enable manual receive mode
             // mode 1
-            static void suffix(ATC atc, uint8_t mux)
+            static void suffix(ATC atc, int mux)
             {
-
+                atc << '1';
+                if(mux >= 0) atc << ',' << mux;
             }
 
             // mode 2 enable throttled manual receive mode, data cannot exceed 1460 bytes at a time
             // mode 3 same as mdoe 2, but "HEX mode" with 730 byte maximum
-            static void suffix(ATC atc, uint8_t mode, uint8_t mux, uint16_t request_length, uint16_t confirmed_length)
+            static void suffix(ATC atc, uint8_t mode, int mux, uint16_t request_length, uint16_t confirmed_length)
             {
+                ATCommander::_experimental::Formatter atcf(atc);
 
+                // prepends each output with a comma
+                atcf.set_auto_delimit();
+
+                // TODO: do debug asserts that mode is 2 or 3 here
+                atc << mode;
+
+                if(mux >= 0) atcf << mux;
+
+                atcf << request_length;
+                atcf << confirmed_length;
             }
 
             // mode 4 query how much data is not read
-            static void suffix(ATC atc, uint8_t mux, uint16_t confirmed_length)
+            static void suffix(ATC atc, int mux, uint16_t confirmed_length)
             {
 
             }

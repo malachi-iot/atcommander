@@ -176,9 +176,13 @@ public:
         typedef uint8_t input_processing_flags;
 
         static constexpr input_processing_flags eat_delimiter_bit = 0x01;
+        // FIX: this is an OUTPUT processing flag
+        static constexpr input_processing_flags auto_delimit_bit = 0x02;
 
         //input_processing_flags _input_processing_flags;
 
+        // TODO: do this later after splitting into OutputFormatter and InputFormatter
+        //template <char output_delimiter = 0>
         class Formatter
         {
             ATCommander& atc;
@@ -193,6 +197,16 @@ public:
         public:
             Formatter(ATCommander& atc) : atc(atc) {}
             ~Formatter() { atc.reset_delimiters(); }
+
+            void set_auto_delimit()
+            {
+                flags |= auto_delimit_bit;
+            }
+
+            bool auto_delimit()
+            {
+                return flags & auto_delimit_bit;
+            }
 
             void set_eat_delimiter()
             { flags |= eat_delimiter_bit; }
@@ -754,6 +768,9 @@ inline ATCommander::_experimental::Formatter& operator>>(ATCommander::_experimen
 template <typename T>
 inline ATCommander::_experimental::Formatter& operator<<(ATCommander::_experimental::Formatter& atcf, T value)
 {
+    if(atcf.auto_delimit())
+        atcf.atc << ',';
+    
     atcf.atc << value;
     return atcf;
 }
