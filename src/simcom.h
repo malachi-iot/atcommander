@@ -157,14 +157,59 @@ public:
             // will be an assign operation
         };
 
+        // Close a TCP or UDP connection
         struct close
         {
             static constexpr char CMD[] = "+CIPCLOSE";
+
+            static void suffix(ATC atc, int mux, bool quick)
+            {
+                atc << mux << ',' << (quick ? '1': '0');
+            }
+
+            static void suffix(ATC atc, int mux)
+            {
+                // documentation odd in this part (it indicates a trailing comma).  I'm wondering if "quick" is
+                // actually not an optional parameter
+                atc << mux << ',';
+            }
+
+            static void suffix(ATC atc, bool quick)
+            {
+                atc << (quick ? '1' : '0');
+            }
+
+
+            static void response(ATC atc, int8_t mux)
+            {
+                if(mux >= 0)
+                {
+                    atc._input_match(mux);
+                    atc >> ',';
+                }
+
+                // TODO: actually do a multimatch with this and "ERROR"
+                atc.input_newline();
+                atc >> "CLOSE OK";
+                atc.input_newline();
+            }
+
+            typedef ATB::assign<close> command;
         };
 
+        // Deactivate GPRS PDP Context
         struct shutdown
         {
             static constexpr char CMD[] = "+CIPSHUT";
+
+            static void response(ATC atc)
+            {
+                static const char* keywords[] = { ATCommander::AT, "SHUT OK" };
+                atc.input_match(keywords);
+                atc.input_newline();
+            }
+
+            typedef ATB::command<shutdown> command;
         };
 
         // NOT TESTED
