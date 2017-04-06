@@ -103,7 +103,7 @@ struct is_function<Ret(Args...)> : true_type {};
 
 // specialization for variadic functions such as std::printf
 template<class Ret, class... Args>
-struct is_function<Ret(Args......)> : true_type {};
+struct is_function<Ret(Args...,...)> : true_type {};
 
 // specialization for function types that have cv-qualifiers
 template<class Ret, class... Args>
@@ -113,9 +113,9 @@ struct is_function<Ret(Args...)volatile> : std::true_type {};
 template<class Ret, class... Args>
 struct is_function<Ret(Args...)const volatile> : std::true_type {};
 template<class Ret, class... Args>
-struct is_function<Ret(Args......)const> : std::true_type {};
+struct is_function<Ret(Args...,...)const> : std::true_type {};
 template<class Ret, class... Args>
-struct is_function<Ret(Args......)volatile> : std::true_type {};
+struct is_function<Ret(Args...,...)volatile> : std::true_type {};
 template<class Ret, class... Args>
-struct is_function<Ret(Args......)const volatile> : std::true_type {};
+struct is_function<Ret(Args...,...)const volatile> : std::true_type {};
 }}
