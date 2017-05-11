@@ -10,9 +10,11 @@ ADD_DEFINITIONS(-DDEBUG_ATC_STRICT)
 
 INCLUDE_DIRECTORIES(lib/Catch/include)
 INCLUDE_DIRECTORIES(lib/atcommander)
+INCLUDE_DIRECTORIES(lib/atcommander/target)
 INCLUDE_DIRECTORIES(lib/util.embedded/src)
 
 file(GLOB atcommander_source "${PROJECT_SOURCE_DIR}/lib/atcommander/*.cpp"
+    "${PROJECT_SOURCE_DIR}/lib/atcommander/target/*.cpp"
     "${PROJECT_SOURCE_DIR}/lib/atcommander/*.h")
 
 #    "${PROJECT_SOURCE_DIR}/lib/atcommander/CMakeLists.txt")

@@ -4,6 +4,7 @@
 INCLUDE_DIRECTORIES(.)
 
 file(GLOB atcommander_source "*.cpp" "*.h"
+        "target/*.cpp"
     "CMakeLists.txt")
 
 message("Debug2: ${atcommander_source}")
