@@ -1,0 +1,8 @@
+BUILD
+
+mbed-os
+lib
+
+mbed_settings.pyc
+
+secrets.h

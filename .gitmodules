@@ -10,3 +10,6 @@
 [submodule "ext/config.webhooks"]
 	path = ext/config.webhooks
 	url = git@gitlab.com:malachi-configuration/webhooks.git
+[submodule "ext/useful-scripts"]
+	path = ext/useful-scripts
+	url = git@gitlab.com:malachi-linux/useful-scripts.git
