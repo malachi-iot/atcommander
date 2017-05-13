@@ -285,6 +285,8 @@ public:
 
                 atc >> ',' >> confirmed_length;
             }
+
+            typedef ATB::assign<receive> assign;
         };
 
         struct send
