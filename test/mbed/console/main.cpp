@@ -3,8 +3,6 @@
 
 #include <BufferedSoftSerial.h>
 
-#include <fact/iostream.h>
-
 //#define DEBUG_ATC_OUTPUT
 //#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
@@ -16,6 +14,8 @@
 
 #include "secrets.h"
 
+#include "fact_semihosting.h"
+
 #define MAL_LED LED1
 
 static void blinky(void) {
@@ -24,38 +24,10 @@ static void blinky(void) {
     //printf("LED = %d \r\n",led.read());
 }
 
-BufferedSoftSerial serial(PA_10, PB_3);
-Serial usb(USBTX, USBRX);
 
-namespace FactUtilEmbedded { namespace std {
-
-ostream cout(usb);
-istream cin(usb);
-ostream& clog = cout;
-
-}}
 
 using namespace FactUtilEmbedded::std;
 
-streamsize bufferedsoftserial_is_avail(void* ctx)
-{
-    return ((BufferedSoftSerial*)ctx)->readable();
-}
-
-int bufferedsoftserial_sbumpc(void* ctx)
-{
-    auto stream = (BufferedSoftSerial*)ctx;
-
-    while(!stream->readable()) { Thread::yield(); }
-
-    return stream->getc();
-}
-
-
-ostream ocserial(serial);
-istream icserial(serial,
-    bufferedsoftserial_is_avail,
-    bufferedsoftserial_sbumpc);
     //,
     //bufferedsoftserial_sgetc);
 
@@ -107,8 +79,8 @@ int main()
     clog << "Compiled at " __TIME__ "\r\n";
     //clog << "ciserial initialized as serial = " << icserial.rdbuf()->is_serial() << "\r\n";
 
-    serial.baud(9600);
-
+    serial_setup();
+    
     queue.call_every(1000, blinky);
 
     ATCommander atc(icserial, ocserial);
