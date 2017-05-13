@@ -5,6 +5,8 @@ void telnet_loop();
 
 #include "fact_semihosting.h"
 
+#include <fact/string_convert.h>
+
 int main()
 {
     serial_setup();

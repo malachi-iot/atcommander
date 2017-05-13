@@ -225,7 +225,8 @@ public:
             // mode 0
 
             // enable manual receive mode
-            // mode 1
+            // always in mode 1
+            // mux represents which connection is at play
             static void suffix(ATC atc, int mux)
             {
                 atc << '1';
@@ -241,7 +242,7 @@ public:
                 if(mux >= 0) atc._input_match((uint16_t )mux);
             }
 
-            // mode 1 with explicit ip & port
+            // mode 1 with explicit ip & port (AT+CIPSRIP=1 mode)
             static void response(ATC atc, int mux, char* ip, char* port)
             {
                 ATCommander::_experimental::Formatter atcf(atc);
@@ -320,6 +321,8 @@ public:
             /// Autodetects CIPQSEND mode, but you have to manually specify MUX mode
             /// \param atc
             /// \param mux
+
+            // this response is for assign-mode
             static bool response(ATC atc, bool mux)
             {
                 static constexpr char SEND_FAIL[] = "SEND FAIL";
