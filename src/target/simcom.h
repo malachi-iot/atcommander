@@ -23,11 +23,12 @@ class generic_at
 
     static constexpr char CDNSGIP[] = "+CDNSGIP"; // IP lookup of a given domain name
 
-    static constexpr char TCP[] = "TCP";
-    static constexpr char UDP[] = "UDP";
     static constexpr char ANDTHEN[] = "\",\"";
 
 public:
+    static constexpr char TCP[] = "TCP";
+    static constexpr char UDP[] = "UDP";
+
     // mode '1' = text, '0' = pdu
     static void set_sms_format(ATC atc, char mode)
     {
@@ -167,8 +168,32 @@ public:
             }
 
 
-            static void response(ATC atc)
+            static void response(ATC atc, bool mux)
             {
+                static const char ALREADY_CONNECT[] = "ALREADY_CONNECT";
+                static const char CONNECT_OK[] = "CONNECT OK";
+                static const char CONNECT_FAIL[] = "CONNECT FAIL";
+                static const char STATE[] = "STATE";
+
+                // If MUX mode (CIPMUX=1) input mux channel and a comma
+                if(mux)
+                {
+                    char mux_channel;
+
+                    atc >> mux_channel >> ',';
+                }
+
+                static const char* keywords[] = { ALREADY_CONNECT, CONNECT_FAIL, CONNECT_OK, STATE, nullptr };
+
+                const char* matched = atc.input_match(keywords);
+
+                // Additional action required in this case, according to docs only
+                // happens when CIPMUX=0
+                if(matched == STATE)
+                {
+                    atc.ignore_whitespace_and_newlines();
+                    atc >> CONNECT_FAIL;
+                }
             }
 
             static void response_nomux(ATC atc)

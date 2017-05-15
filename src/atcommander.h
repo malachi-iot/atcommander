@@ -398,6 +398,12 @@ public:
     }
 
 
+    /**
+     * @brief Match on one of many keywords described in an array
+     *
+     * @param keywords null-terminated array of possible matching keywords
+     * @return pointer to matched keyword, or nullptr
+     */
     const char* input_match(const char** keywords)
     {
         layer3::MultiMatcher matcher(keywords);
@@ -770,7 +776,7 @@ inline ATCommander::_experimental::Formatter& operator<<(ATCommander::_experimen
 {
     if(atcf.auto_delimit())
         atcf.atc << ',';
-    
+
     atcf.atc << value;
     return atcf;
 }
@@ -793,5 +799,3 @@ inline ATCommander& operator >>(ATCommander& atc, T& value)
     return atc;
 }
 */
-
-
