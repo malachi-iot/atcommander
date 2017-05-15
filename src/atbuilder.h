@@ -2,6 +2,18 @@
 
 #include "atcommander.h"
 
+/**
+ * Helpful hints:
+ *
+ * during request processing:
+ *
+ * use 'suffix' during "assign" or "command" commands
+ *
+ * during response processing:
+ *
+ * use 'response_suffix' during "status" commands
+ * use
+ */
 class ATBuilder
 {
     typedef ATCommander& ATC;

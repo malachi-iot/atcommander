@@ -136,6 +136,18 @@ public:
         {
             static constexpr char CMD[] = "+CIPSTART";
 
+            // Responses for assign operation are:
+            // (mux = 0 mode)
+            // "OK"
+            // "ALREADY CONNECT"
+            // "CONNECT OK"
+            // "STATE: <state#>\n\nCONNECT FAIL"  (mux=0 mode)
+            // (mux = 1 mode)
+            // "OK,"  (seems wrong)
+            // "<n>,ALREADY CONNECT"
+            // "<n>,CONNECT OK"
+            // "<n>,CONNECT FAIL"
+
             static void suffix(ATC atc, const char *mode, const char *destination, uint16_t port, short connection = -1)
             {
                 // Use only during +CIPMUX=1
@@ -154,7 +166,16 @@ public:
                 suffix(atc, tcp ? TCP : UDP, destination, port, connection);
             }
 
-            // will be an assign operation
+
+            static void response(ATC atc)
+            {
+            }
+
+            static void response_nomux(ATC atc)
+            {
+            }
+
+            typedef ATB::assign<start> command;
         };
 
         // Close a TCP or UDP connection

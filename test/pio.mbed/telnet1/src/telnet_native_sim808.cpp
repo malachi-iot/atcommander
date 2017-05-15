@@ -57,6 +57,10 @@ void sim808_setup()
 void telnet_setup()
 {
     sim808_setup();
+
+    atc.command<ip::mux>(true); // turn on multiconnection mode
+    atc.command<ip::start>("TCP", "rainmaker.wunderground.com", 23, 1);
+    // FIX: still need response handler for ip::start
     timer.start();
 }
 
