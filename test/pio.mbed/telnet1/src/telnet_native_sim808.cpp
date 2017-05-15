@@ -59,6 +59,13 @@ void telnet_setup()
     sim808_setup();
 
     atc.command<ip::mux>(true); // turn on multiconnection mode
+    atc.command<ip::receive_mode>('1'); // 1 = manual mode
+
+    // Odd, but this seems to be necessary after setting IPmux = 1
+    atc.command<sim808::apn_credentials>("CMNET");
+    atc.command<sim808::bringup_wireless>();
+    //atc.command<sim808::get_local_ip_address>(); // Docs say we need this but I'm thinking and hoping we don't
+
     //atc.command<ip::start>("TCP", "rainmaker.wunderground.com", 23, 1);
     ip::start::command::request(atc, sim808::TCP, "rainmaker.wunderground.com", 23, 1);
     ip::start::command::response(atc, true); // process response in multiconnection mode
@@ -80,8 +87,8 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length)
     uint16_t request_length = _request_length;
     uint16_t confirmed_length = 0;
 
-    ip::receive::assign::request(atc, mux);
-    ip::receive::assign::response(atc, 2, mux, request_length, confirmed_length);
+    ip::receive::command::request(atc, mux);
+    ip::receive::command::response(atc, 2, mux, request_length, confirmed_length);
 
     if(confirmed_length)
         atc.cin.read((char*)input, confirmed_length);

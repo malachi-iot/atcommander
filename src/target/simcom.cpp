@@ -34,6 +34,7 @@ constexpr char http::term::CMD[];
 constexpr char generic_at::http_ssl::CMD[];
 
 constexpr char generic_at::bringup_wireless::CMD[];
+constexpr char generic_at::apn_credentials::CMD[];
 constexpr char generic_at::get_local_ip_address::CMD[];
 constexpr char generic_at::bearer_settings::CMD[];
 

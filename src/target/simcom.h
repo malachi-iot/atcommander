@@ -47,7 +47,7 @@ public:
     //  username
     //  password
     // UNTESTED
-    class apn_credentials
+    struct apn_credentials
     {
         static constexpr char CMD[] = "+CSTT";
 
@@ -62,6 +62,8 @@ public:
             suffix(atc, apn);
             atc << ",\"" << username << ANDTHEN << password;
         }
+
+        typedef ATB::assign<apn_credentials> command;
     };
 
 
@@ -131,6 +133,11 @@ public:
         {
             static constexpr char CMD[] = "+CIPSTATUS";
 
+        };
+
+        struct ping
+        {
+            static constexpr char CMD[] = "+CIPPING";
         };
 
         struct start
@@ -220,6 +227,7 @@ public:
                 atc << mux << ',';
             }
 
+            // this would be for non-mux mode only
             static void suffix(ATC atc, bool quick)
             {
                 atc << (quick ? '1' : '0');
@@ -259,6 +267,18 @@ public:
         };
 
         // NOT TESTED
+        //
+        // This is an odd command, because it seems to do two distinctly different
+        // things.  When all connections are closed, you can do
+        // AT+CIPRXGET=[0,1] to switch out and into manual mode, respectively
+        // When connections are open, you do
+        // AT+CIPRXGET=[0-4],(mux,)[reqlen]
+        // Where 0-4 represents a mode (seems like maybe only mode 2-4 used here)
+        // mux is the optional mux param (if CIPMUX=1) and reqlen tells us how many
+        // max characters we are interested in
+        //
+        // Because of this, I am splitting out receieve_mode command
+        // and doing behavior #1 there
         struct receive
         {
             static constexpr char CMD[] = "+CIPRXGET";
@@ -333,7 +353,18 @@ public:
                 atc >> ',' >> confirmed_length;
             }
 
-            typedef ATB::assign<receive> assign;
+            typedef ATB::assign<receive> command;
+        };
+
+        struct receive_mode : public receive
+        {
+            // mode is always 0 or 1 in this context
+            static void suffix(ATC atc, const char mode)
+            {
+                atc << mode;
+            }
+
+            typedef ATB::assign<receive_mode> command;
         };
 
         struct send
