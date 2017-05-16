@@ -9,10 +9,10 @@ void telnet_loop();
 
 int main()
 {
+    clog << "Compiled at " __TIME__ << endl;
+
     serial_setup();
     telnet_setup();
-
-    clog << "Compiled at " __TIME__ << endl;
 
     for(;;)
     {

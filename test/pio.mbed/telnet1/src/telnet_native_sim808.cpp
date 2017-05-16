@@ -1,3 +1,5 @@
+#define DEBUG_ATC_MATCH
+
 #include "hayes.h"
 #include "3gpp.h"
 #include <target/simcom.h>
