@@ -22,6 +22,7 @@ constexpr char ip::ssl::CMD[];
 constexpr char ip::mux::CMD[];
 constexpr char ip::send::CMD[];
 constexpr char ip::receive::CMD[];
+constexpr char ip::shutdown::CMD[];
 
 constexpr char generic_at::http_action::CMD[];
 constexpr char generic_at::http_read::CMD[];

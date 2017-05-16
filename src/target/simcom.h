@@ -263,7 +263,7 @@ public:
                 atc.input_newline();
             }
 
-            typedef ATB::command<shutdown> command;
+            typedef ATB::command_auto<shutdown> command;
         };
 
         // NOT TESTED
