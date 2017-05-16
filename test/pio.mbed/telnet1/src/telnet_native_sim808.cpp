@@ -1,3 +1,5 @@
+#define DEBUG_ATC_OUTPUT
+//#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
 #include "hayes.h"
@@ -64,13 +66,13 @@ void telnet_setup()
 
     clog << "IP setup" << endl;
     
-    atc.command<ip::mux>(true); // turn on multiconnection mode
-    atc.command<ip::receive_mode>('1'); // 1 = manual mode
-
     // Odd, but this seems to be necessary after setting IPmux = 1
     atc.command<sim808::apn_credentials>("CMNET");
     atc.command<sim808::bringup_wireless>();
     //atc.command<sim808::get_local_ip_address>(); // Docs say we need this but I'm thinking and hoping we don't
+
+    atc.command<ip::mux>(true); // turn on multiconnection mode
+    atc.command<ip::receive_mode>('1'); // 1 = manual mode
 
     //atc.command<ip::start>("TCP", "rainmaker.wunderground.com", 23, 1);
     ip::start::command::request(atc, sim808::TCP, "rainmaker.wunderground.com", 23, 1);
