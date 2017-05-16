@@ -1,5 +1,5 @@
 #define DEBUG_ATC_OUTPUT
-#define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
 #include "hayes.h"
@@ -101,7 +101,7 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length)
     uint16_t request_length = _request_length;
     uint16_t confirmed_length = 0;
 
-    ip::receive::command::request(atc, mux);
+    ip::receive::command::request(atc, '2', mux, request_length);
     ip::receive::command::response(atc, 2, mux, request_length, confirmed_length);
 
     if(confirmed_length)

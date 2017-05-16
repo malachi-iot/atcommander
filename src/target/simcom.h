@@ -201,6 +201,8 @@ public:
 
                 static const char* keywords[] = { ALREADY_CONNECT, CONNECT_FAIL, CONNECT_OK, STATE, nullptr };
 
+                atc.ignore_whitespace();
+
                 const char* matched = atc.input_match(keywords);
 
                 // Additional action required in this case, according to docs only
@@ -210,6 +212,8 @@ public:
                     atc.ignore_whitespace_and_newlines();
                     atc >> CONNECT_FAIL;
                 }
+
+                atc.ignore_whitespace_and_newlines();
             }
 
             static void response_nomux(ATC atc)
@@ -307,13 +311,38 @@ public:
             // if they are qualified or if they just randomly show up with binary data out of the blue)
             // mode 0
 
+            // activate the RX behaviors
+            // mux represents which connection is at play
+            static void suffix(ATC atc, const char mode, int mux)
+            {
+                // TODO: assert mode is '0'-'4'
+                // FIX: repair this so that << syntax works
+                //atc.put(mode);
+                atc << mode;
+                if(mux >= 0) atc << ',' << mux;
+            }
+
+            // Technically this should live in the receive_mode area, since
+            // all it should be doing is instruct a particular mux to be at
+            // a particular level (last part in theory, NOT TESTED)
             // enable manual receive mode
             // always in mode 1
             // mux represents which connection is at play
             static void suffix(ATC atc, int mux)
             {
-                atc << '1';
+                suffix(atc, '1', mux);
+            }
+
+            // activate the RX behaviors
+            // mux represents which connection is at play
+            static void suffix(ATC atc, const char mode, int mux, uint16_t request_length)
+            {
+                // TODO: assert mode is '0'-'4'
+                // FIX: repair this so that << syntax works
+                //atc.put(mode);
+                atc << mode;
                 if(mux >= 0) atc << ',' << mux;
+                if(request_length > 0) atc << ',' << request_length;
             }
 
             static void response_helper(ATC atc, uint8_t mode, int mux)
