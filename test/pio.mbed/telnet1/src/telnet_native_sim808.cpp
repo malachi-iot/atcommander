@@ -123,10 +123,16 @@ void telnet_loop()
     {
         uint8_t input[64];
 
-        uint16_t length = telnet_get_site_input(input, sizeof(input));
-
-        if(length)
+        uint16_t length;
+        
+        while(length = telnet_get_site_input(input, sizeof(input)))
+        {
             cout.write((char*)input, length);
+            // If length read was less than a full buffer, then we
+            // expect we've read everything currently available 
+            // and abort the loop
+            if(length < sizeof(input)) break;
+        }
 
         // we specifically reset at the end, we want to elongate delays
         // if it's time consuming to read , otherwise we'll be wacking the
