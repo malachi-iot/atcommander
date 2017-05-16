@@ -1,5 +1,5 @@
-#define DEBUG_ATC_OUTPUT
-//#define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_OUTPUT
+#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
 #include "hayes.h"
@@ -46,7 +46,9 @@ void sim808_setup()
     atc.command<sim808::registration>(1);
     // bringup wireless connection to GPRS
     //atc.command<simcom::generic_at::bringup_wireless>();
-    atc.command<sim808::bearer_settings>(1, 1);
+
+
+    //atc.command<sim808::bearer_settings>(1, 1);
 
     if(power_level != 1)
     {
@@ -96,20 +98,33 @@ void telnet_get_input_char()
 
 uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length)
 {
+    //clog << "Input phase" << endl;
+
     int mux = 1;
 
     uint16_t request_length = _request_length;
-    uint16_t confirmed_length = 0;
+    uint16_t response_length = 0;
+    uint16_t remaining_length = 0;
 
     ip::receive::command::request(atc, '2', mux, request_length);
-    ip::receive::command::response(atc, 2, mux, request_length, confirmed_length);
+    ip::receive::command::response(atc, 2, mux, &response_length, &remaining_length);
 
-    if(confirmed_length)
-        atc.cin.read((char*)input, confirmed_length);
+    //clog << "response_length (2): " << response_length;
+    //clog << "remaining_length (2): " << remaining_length;
+
+    if(response_length)
+    {
+        clog << "Pulling in response length of: " << response_length << endl;
+        // TODO: implement a timeout for blocking read operation (hopefully
+        // hidden within istream)
+        atc.cin.read((char*)input, response_length);
+    }
+
+    clog << "Checking for OK" << endl;
 
     atc.check_for_ok();
 
-    return confirmed_length;
+    return remaining_length;
     //atc.command<ip::receive>();
 }
 
@@ -135,7 +150,7 @@ void telnet_loop()
 
     if(timer.read_ms() > 500)
     {
-        uint8_t input[64];
+        uint8_t input[128];
 
         uint16_t length;
 

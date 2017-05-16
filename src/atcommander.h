@@ -761,6 +761,8 @@ inline ATCommander& operator>>(ATCommander& atc, const char* matchValue)
 }
 
 
+// FIX: Beware, this only works properly with char* type T
+// so basically broken
 template <typename T>
 inline ATCommander::_experimental::Formatter& operator>>(ATCommander::_experimental::Formatter& atcf, T value)
 {

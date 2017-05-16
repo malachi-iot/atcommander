@@ -214,6 +214,21 @@ public:
                 }
 
                 atc.ignore_whitespace_and_newlines();
+
+                // MODE 1 behavior only (probably)
+                // look for +CIPRXGET=1,n
+
+                atc >> receive::CMD >> ": 1,";
+                uint8_t mux_channel;
+                atc >> mux_channel;
+
+                //fstd::clog << "GOT HERE 1: " << mux_channel;
+
+                atc.skip_newline();
+                // FIX: following is locking up, the unget/caching trick might be glitched out
+                //atc.ignore_whitespace_and_newlines();
+
+                //fstd::clog << "GOT HERE 2";
             }
 
             static void response_nomux(ATC atc)
@@ -369,19 +384,47 @@ public:
 
             // mode 2 enable throttled manual receive mode, data cannot exceed 1460 bytes at a time
             // mode 3 same as mdoe 2, but "HEX mode" with 730 byte maximum
-            static void response(ATC atc, uint8_t mode, int mux, uint16_t& request_length, uint16_t& confirmed_length)
+            static void response(ATC atc, uint8_t mode, int mux, uint16_t* response_length, uint16_t* remaining_length)
             {
                 // TODO: Assert mode is 2 or 3
                 response_helper(atc, mode, mux);
 
-                // prepends each output with a comma
+                atc >> ',';
 
-                atc >> request_length >> ',';
-                atc >> confirmed_length;
+                atc.set_delimiter(",\r\n");
+
+                atc >> *response_length >> ',';
+                fstd::clog << "response_length = " << *response_length << fstd::endl;
+                atc >> *remaining_length;
+                fstd::clog << "remaining_length = " << *remaining_length << fstd::endl;
+
+                atc.reset_delimiters();
+
+                /*
+                 * broken since atcf >> operator only works properly with char* right now
+                ATCommander::_experimental::Formatter atcf(atc);
+
+                atcf.eat_delimiters(",\r\n");
+
+                // prepends each output with a comma
+                atcf >> response_length;
+
+                uint16_t temp = response_length;
+
+                fstd::clog << "response_length = " << temp << fstd::endl;
+
+                atcf >> remaining_length;
+
+                fstd::clog << "remaining_length = " << remaining_length << fstd::endl;*/
+
+                //atc >> '\r';
+                atc.input_newline();
             }
 
+            // FIX: Looks like our clever "response function finder" doesn't handle references so well
+            // so we need to use pointers to pass back variables in
             // mode 2, 3 with explicit IP address & port
-            static void response(ATC atc, uint8_t mode, int mux, uint16_t& request_length, uint16_t& confirmed_length,
+            static void response(ATC atc, uint8_t mode, int mux, uint16_t* request_length, uint16_t* confirmed_length,
                                  char* ip, char* port)
             {
                 ATCommander::_experimental::Formatter atcf(atc);
