@@ -1,4 +1,4 @@
-//#define DEBUG_ATC_OUTPUT
+#define DEBUG_ATC_OUTPUT
 #define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
@@ -73,6 +73,11 @@ void telnet_setup()
     // Odd, but this seems to be necessary after setting IPmux = 1
     atc.command<sim808::apn_credentials>("CMNET");
     atc.command<sim808::bringup_wireless>();
+
+    char ip_address[60];
+
+    sim808::get_local_ip_address::command::request(atc);
+    sim808::get_local_ip_address::command::response(atc, ip_address);
     //atc.command<sim808::get_local_ip_address>(); // Docs say we need this but I'm thinking and hoping we don't
 
     //atc.command<ip::start>("TCP", "rainmaker.wunderground.com", 23, 1);
@@ -133,14 +138,16 @@ void telnet_loop()
         uint8_t input[64];
 
         uint16_t length;
-        
-        while(length = telnet_get_site_input(input, sizeof(input)))
+
+        // TODO: make this if a while once things get moving
+        if(length = telnet_get_site_input(input, sizeof(input)))
         {
             cout.write((char*)input, length);
+
             // If length read was less than a full buffer, then we
-            // expect we've read everything currently available 
+            // expect we've read everything currently available
             // and abort the loop
-            if(length < sizeof(input)) break;
+            //if(length < sizeof(input)) break; // commented out only while it's not a while
         }
 
         // we specifically reset at the end, we want to elongate delays

@@ -182,12 +182,21 @@ public:
                 static const char CONNECT_FAIL[] = "CONNECT FAIL";
                 static const char STATE[] = "STATE";
 
+                atc.ignore_whitespace_and_newlines();
+
+                atc.check_for_ok();
+
+                atc.ignore_whitespace_and_newlines();
+
                 // If MUX mode (CIPMUX=1) input mux channel and a comma
                 if(mux)
                 {
                     char mux_channel;
 
-                    atc >> mux_channel >> ',';
+                    atc.input(mux_channel);
+
+                    //atc >> mux_channel >> ',';
+                    atc >> ',';
                 }
 
                 static const char* keywords[] = { ALREADY_CONNECT, CONNECT_FAIL, CONNECT_OK, STATE, nullptr };
@@ -265,6 +274,7 @@ public:
                 // TODO: document: why am I looking for AT here?
                 static const char* keywords[] = { ATCommander::AT, "SHUT OK", nullptr };
 
+                atc.ignore_whitespace_and_newlines();
                 // FIX: I think this has a bug/aborts processing early
                 atc.input_match(keywords);
                 atc.input_newline();
@@ -308,6 +318,7 @@ public:
 
             static void response_helper(ATC atc, uint8_t mode, int mux)
             {
+                atc.ignore_whitespace_and_newlines();
                 atc >> CMD >> ": ";
                 // NOTE: keep an eye on delimiters here
                 atc._input_match(mode);
@@ -745,9 +756,20 @@ public:
     {
         static constexpr char CMD[] = "+CIFSR";
 
+        // TODO: clean this approach up
+        static void suffix(ATC atc) {}
+
         // UNTESTED
+        // response_suffix only works during 'request' command format
+        /*
         static void response_suffix(ATC atc, char* ip)
         {
+            atc.getline(ip, 60);
+        } */
+
+        static void response(ATC atc, char* ip)
+        {
+            atc.ignore_whitespace_and_newlines();
             atc.getline(ip, 60);
         }
 

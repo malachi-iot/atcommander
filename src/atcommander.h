@@ -364,7 +364,9 @@ public:
         bool matched = ch == match;
 #ifdef DEBUG_ATC_MATCH
         debug_context.dump(fstd::clog);
-        fstd::clog << "Match raw '" << match << "' = " << (matched ? "true" : "false") << fstd::endl;
+        fstd::clog << "Match raw '" << match << "' = " << (matched ? "true" : "false - instead got ");
+        if(!matched) fstd::clog << '"' << (char)ch << '"';
+        fstd::clog << fstd::endl;
 #endif
         return matched;
     }
