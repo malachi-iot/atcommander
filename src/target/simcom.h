@@ -262,11 +262,10 @@ public:
 
             static void response(ATC atc)
             {
-                fstd::clog << "Custom CIPSHUT processing" << fstd::endl;
-
                 // TODO: document: why am I looking for AT here?
                 static const char* keywords[] = { ATCommander::AT, "SHUT OK", nullptr };
 
+                // FIX: I think this has a bug/aborts processing early
                 atc.input_match(keywords);
                 atc.input_newline();
             }
@@ -778,7 +777,9 @@ public:
             }
         }
 
-        // UNTESTED
+        // UNTESTED (mostly)
+        // FIX: This is not getting called, but, always getting ERROR from 
+        // this command anyway
         static void response(ATC atc, uint8_t& cid, uint8_t& status, char* ip)
         {
             atc.ignore_whitespace_and_newlines();
