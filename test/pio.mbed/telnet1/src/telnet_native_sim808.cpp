@@ -56,8 +56,12 @@ void sim808_setup()
 
 void telnet_setup()
 {
+    clog << "sim808 setup" << endl;
+
     sim808_setup();
 
+    clog << "IP setup" << endl;
+    
     atc.command<ip::mux>(true); // turn on multiconnection mode
     atc.command<ip::receive_mode>('1'); // 1 = manual mode
 

@@ -12,6 +12,8 @@ int main()
     serial_setup();
     telnet_setup();
 
+    clog << "Compiled at " __TIME__ << endl;
+
     for(;;)
     {
         telnet_loop();
