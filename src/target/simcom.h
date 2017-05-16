@@ -256,6 +256,10 @@ public:
         {
             static constexpr char CMD[] = "+CIPSHUT";
 
+            // TODO: Make suffix optional similar to how response is optional
+            // (only for command, not for assign)
+            static void suffix(ATC) {}
+
             static void response(ATC atc)
             {
                 fstd::clog << "Custom CIPSHUT processing" << fstd::endl;
@@ -267,7 +271,7 @@ public:
                 atc.input_newline();
             }
 
-            typedef ATB::command_auto<shutdown> command;
+            typedef ATB::command<shutdown> command;
         };
 
         // NOT TESTED

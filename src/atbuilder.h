@@ -166,6 +166,9 @@ public:
     };
 
 
+    /// @brief Automatically handles input values and uses canned OK response handler
+    ///
+    ///
     template <class TProvider, class ...TArgs>
     struct command_auto : public command<TProvider, command_helper_autorequest<TArgs...>> {};
 
