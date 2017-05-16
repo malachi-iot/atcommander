@@ -1,5 +1,5 @@
-#define DEBUG_ATC_OUTPUT
-//#define DEBUG_ATC_INPUT
+//#define DEBUG_ATC_OUTPUT
+#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
 
 #include "hayes.h"
@@ -66,7 +66,7 @@ void telnet_setup()
 
     clog << "IP setup" << endl;
 
-    atc.command<ip::shutdown>(); // just because our tests probably leave it lingering open
+    atc.command<ip::shutdown>(); // ensure IP is in initial state (critical)
     atc.command<ip::mux>(true); // turn on multiconnection mode
     atc.command<ip::receive_mode>('1'); // 1 = manual mode
 

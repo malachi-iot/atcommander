@@ -258,7 +258,11 @@ public:
 
             static void response(ATC atc)
             {
-                static const char* keywords[] = { ATCommander::AT, "SHUT OK" };
+                fstd::clog << "Custom CIPSHUT processing" << fstd::endl;
+
+                // TODO: document: why am I looking for AT here?
+                static const char* keywords[] = { ATCommander::AT, "SHUT OK", nullptr };
+
                 atc.input_match(keywords);
                 atc.input_newline();
             }
