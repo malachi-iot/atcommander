@@ -96,7 +96,7 @@ void telnet_get_input_char()
 
 }
 
-uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length)
+uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length, uint16_t* _remaining_length = nullptr)
 {
     //clog << "Input phase" << endl;
 
@@ -112,19 +112,30 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length)
     //clog << "response_length (2): " << response_length;
     //clog << "remaining_length (2): " << remaining_length;
 
+    auto return_length = response_length;
+
     if(response_length)
     {
-        clog << "Pulling in response length of: " << response_length << endl;
+        //response_length = 10;
+        //clog << "Pulling in response length of: " << response_length << endl;
         // TODO: implement a timeout for blocking read operation (hopefully
         // hidden within istream)
-        atc.cin.read((char*)input, response_length);
+        while(response_length--)
+        {
+            int ch = atc.cin.get();
+
+            if(ch >= 0)
+                *input++ = ch;
+        }
+
+        //atc.cin.read((char*)input, response_length);
     }
 
-    clog << "Checking for OK" << endl;
+    //clog << "Checking for OK" << endl;
 
     atc.check_for_ok();
 
-    return remaining_length;
+    return return_length;
     //atc.command<ip::receive>();
 }
 
@@ -148,21 +159,22 @@ void telnet_loop()
         telnet_send_site_output(c);
     }
 
-    if(timer.read_ms() > 500)
+    if(timer.read_ms() > 5000)
     {
+        // FIX: If we make this input buffer 256, we error out grabbing remaining_length after response_length
         uint8_t input[128];
 
         uint16_t length;
+        uint16_t remaining_length;
 
         // TODO: make this if a while once things get moving
-        if(length = telnet_get_site_input(input, sizeof(input)))
+        while(length = telnet_get_site_input(input, sizeof(input), &remaining_length))
         {
             cout.write((char*)input, length);
 
             // If length read was less than a full buffer, then we
             // expect we've read everything currently available
             // and abort the loop
-            //if(length < sizeof(input)) break; // commented out only while it's not a while
         }
 
         // we specifically reset at the end, we want to elongate delays
