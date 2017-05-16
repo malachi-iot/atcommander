@@ -82,4 +82,22 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
         REQUIRE(buf[0] == '7');
         REQUIRE(buf[1] == '7');
     }
+    GIVEN("multi-match test 2")
+    {
+        static const char* keywords[] = { ATCommander::AT, "SHUT OK", nullptr };
+        layer3::MultiMatcher matcher(keywords);
+        const char keyword[] = "SHUT OK\n";
+        const char* k = keyword;
+        char ch;
+
+        while(ch = *k++)
+        {
+            if(!matcher.parse(ch)) break;
+        }
+
+        k = matcher.matched();
+
+        REQUIRE(k);
+        REQUIRE(!strncmp(k, keyword, strlen(k)));
+    }
 }
