@@ -5,6 +5,8 @@
 
 #include "fact_semihosting.h"
 
+//#define DEBUG_IS_AVAIL
+
 BufferedSoftSerial serial(PA_10, PB_3);
 Serial usb(USBTX, USBRX);
 
@@ -16,11 +18,18 @@ ostream& clog = cout;
 
 }}
 
+using namespace FactUtilEmbedded::std;
+
 
 streamsize bufferedsoftserial_is_avail(void* ctx)
 {
     streamsize readable = ((BufferedSoftSerial*)ctx)->readable();
-    // seems to be always returning 0
+
+#ifdef DEBUG_IS_AVAIL
+    if(readable > 0)
+        clog << "Have some input" << endl;
+#endif
+
     return readable;
 }
 

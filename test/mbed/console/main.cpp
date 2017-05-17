@@ -48,8 +48,14 @@ static bool echo_loop()
         int c = icserial.get();
         cout.put(c);
     }*/
+    // The trouble with peek is the xsgetn resolves for BufferedSoftSerial to
+    // the NON buffered Stream::read, which in turn calls _getc, which in turn
+    // goes to SoftSerial::_getc instead of BufferedSoftSerial::_getc, because
+    // BufferedSoftSerial::_getc doesn't exit
     if(c = icserial.peek() != EOF)
     {
+        clog << "Have some input II" << endl;
+
         // TODO: If non-character-acquiring-pointer-bumping-only flavor exists
         // use that instead
         int _c = icserial.get();
