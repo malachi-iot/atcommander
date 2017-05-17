@@ -20,6 +20,7 @@ ostream& clog = cout;
 streamsize bufferedsoftserial_is_avail(void* ctx)
 {
     streamsize readable = ((BufferedSoftSerial*)ctx)->readable();
+    // seems to be always returning 0
     return readable;
 }
 

@@ -6,12 +6,13 @@
 //#define DEBUG_ATC_OUTPUT
 //#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
-//#define DEBUG_PEEK
+#define DEBUG_PEEK
 #define FEATURE_MINIMAL
 // FIX: Non-threaded mode doesn't work
-#define FEATURE_THREAD
+// NOTE: Now it does... so I am thinking we have a pointer malfunction somehwere
+//#define FEATURE_THREAD
 
-#define DEBUG_FEATURE_MINIMAL
+//#define DEBUG_FEATURE_MINIMAL
 
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
@@ -56,6 +57,7 @@ static bool echo_loop()
     }
     else if(c = cin.peek() != EOF)
     {
+        // this peek works fine
         int _c = cin.get();
         ocserial.put(c);
     }
