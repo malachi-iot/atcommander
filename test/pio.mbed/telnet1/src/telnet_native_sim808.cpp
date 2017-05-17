@@ -9,6 +9,7 @@
 #include "fact_semihosting.h"
 
 #include <Timer.h>
+//#include <mbed.h> // only need this for Thread::yield
 
 struct sim808 :
     public hayes::v250,
@@ -143,7 +144,16 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length, uint16_
 void telnet_send_site_output(char c)
 {
     ip::send::assign::request(atc, 1, 1);
+
+    atc.ignore_whitespace_and_newlines();
+    atc >> "> ";
+
+    //Thread::yield();
     atc << c;
+
+    atc.ignore_whitespace_and_newlines();
+
+    //Thread::yield();
     ip::send::assign::response(atc, true); // true = mux mode = on
 
     /*

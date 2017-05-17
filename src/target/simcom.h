@@ -500,24 +500,41 @@ public:
 
                 bool result;
 
+                fstd::clog << "SEND phase 1" << fstd::endl;
+
                 // since mux result is in awkward location, we have to be
                 // tricky about detecting SEND_FAIL (it always prepends [n,] in muxmode
                 // regardless of qsend mode
                 if(mux)
                 {
+                    fstd::clog << "SEND phase 1.1" << fstd::endl;
+
                     ATCommander::_experimental::Formatter atcf(atc);
 
                     atcf.eat_delimiters(",:\n");
 
                     uint8_t mux_channel;
 
-                    if(isdigit(atc.peek()))
+                    // can't use atc.peek() because it resolves down to a full xgetn operation which in turn
+                    // resolves down to a BufferedSerial->read operation which itself seems to be broken
+                    //if(isdigit(atc.peek()))
+                    int ch = atc.get();
+                    atc.unget(ch);
+
+                    fstd::clog << "SEND phase 1.2" << fstd::endl;
+
+                    if(isdigit(ch))
                     {
+                        fstd::clog << "SEND phase 1.2.1" << fstd::endl;
+
                         // if we have a digit here, then mux is leading
                         // which means either:
                         // a) qsend mode = 0
                         // b) SEND_FAIL is coming
                         atcf >> mux_channel;
+
+                        // making a ' ' eaten delimiter doesn't seem to work here
+                        atc >> ' ';
 
                         const char* matched = atc.input_match(keywords);
 
@@ -525,6 +542,7 @@ public:
                     }
                     else
                     {
+                        fstd::clog << "SEND phase 1.2.2" << fstd::endl;
                         // if no digit here, it won't be a SEND_FAIL because in mux
                         // mode SEND_FAIL is preceded by [n,] so instead we know
                         // it's going to be DATA_ACCEPT
@@ -538,10 +556,16 @@ public:
                         result = atc.error.at_result();
                     }
 
+                    fstd::clog << "SEND phase 1.3" << fstd::endl;
+
+                    // FIX: For some reason, when outputting a 13, we get an extra response
+                    // +CIPRXGET: 1,1 and also this next line locks things up in that circumstance
                     atc.input_newline();
                 }
                 else
                 {
+                    fstd::clog << "SEND phase 1.4" << fstd::endl;
+
                     const char* matched = atc.input_match(keywords);
 
                     if(matched == DATA_ACCEPT)
@@ -552,6 +576,8 @@ public:
 
                     result = matched != SEND_FAIL;
                 }
+
+                fstd::clog << "SEND phase 2" << fstd::endl;
 
                 return result;
             }
