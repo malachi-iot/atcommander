@@ -6,6 +6,7 @@
 //#define DEBUG_ATC_OUTPUT
 //#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
+#define DEBUG_PEEK
 
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
@@ -42,7 +43,24 @@ static void echo2()
         {
             cout << "Heartbeat: " << counter << "\r\n";
         }*/
+#ifdef DEBUG_PEEK
+        int c;
 
+        // FIX: peek locks things up in context of BufferedSoftSerial operations
+        // and possibly , but hopefully, not other operations
+        if(c = icserial.peek() != EOF)
+        {
+            // TODO: If non-character-acquiring-pointer-bumping-only flavor exists
+            // use that instead
+            int _c = icserial.get();
+            cout.put(c);
+        }
+        else if(c = cin.peek() != EOF)
+        {
+            int _c = cin.get();
+            ocserial.put(c);
+        }
+#else
         if(icserial.rdbuf()->in_avail())
         {
             int c = icserial.get();
@@ -53,6 +71,7 @@ static void echo2()
             int c = cin.get();
             ocserial.put(c);
         }
+#endif
         else
         {
             Thread::yield();
@@ -80,7 +99,7 @@ int main()
     //clog << "ciserial initialized as serial = " << icserial.rdbuf()->is_serial() << "\r\n";
 
     serial_setup();
-    
+
     queue.call_every(1000, blinky);
 
     ATCommander atc(icserial, ocserial);

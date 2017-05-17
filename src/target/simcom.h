@@ -560,6 +560,7 @@ public:
 
                     // FIX: For some reason, when outputting a 13, we get an extra response
                     // +CIPRXGET: 1,1 and also this next line locks things up in that circumstance
+                    // FIX: prone to hanging since it uses peek() command
                     atc.input_newline();
                 }
                 else
