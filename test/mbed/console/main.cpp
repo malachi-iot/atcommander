@@ -6,7 +6,12 @@
 //#define DEBUG_ATC_OUTPUT
 //#define DEBUG_ATC_INPUT
 #define DEBUG_ATC_MATCH
-#define DEBUG_PEEK
+//#define DEBUG_PEEK
+#define FEATURE_MINIMAL
+// FIX: Non-threaded mode doesn't work
+#define FEATURE_THREAD
+
+#define DEBUG_FEATURE_MINIMAL
 
 // TODO: consider moving these includes into an atcommander folder
 #include "hayes.h"
@@ -29,55 +34,75 @@ static void blinky(void) {
 
 using namespace FactUtilEmbedded::std;
 
+static bool echo_loop()
+{
+#ifdef DEBUG_PEEK
+    int c;
+
+    // FIX: peek locks things up in context of BufferedSoftSerial operations
+    // and possibly , but hopefully, not other operations
+    /*
+    if(icserial.rdbuf()->in_avail())
+    {
+        int c = icserial.get();
+        cout.put(c);
+    }*/
+    if(c = icserial.peek() != EOF)
+    {
+        // TODO: If non-character-acquiring-pointer-bumping-only flavor exists
+        // use that instead
+        int _c = icserial.get();
+        cout.put(c);
+    }
+    else if(c = cin.peek() != EOF)
+    {
+        int _c = cin.get();
+        ocserial.put(c);
+    }
+#else
+    if(icserial.rdbuf()->in_avail())
+    {
+        int c = icserial.get();
+        cout.put(c);
+    }
+    else if(cin.rdbuf()->in_avail())
+    {
+        int c = cin.get();
+        ocserial.put(c);
+    }
+#endif
+    else return false;
+
+    return true;
+}
     //,
     //bufferedsoftserial_sgetc);
 
-static void echo2()
+static void echo_thread()
 {
+    clog << "Starting ECHO mode" << endl;
+
     static int counter = 0;
 
     for(;;)
     {
-        /*
-        if(++counter % 1000 == 0)
-        {
-            cout << "Heartbeat: " << counter << "\r\n";
-        }*/
-#ifdef DEBUG_PEEK
-        int c;
-
-        // FIX: peek locks things up in context of BufferedSoftSerial operations
-        // and possibly , but hopefully, not other operations
-        if(c = icserial.peek() != EOF)
-        {
-            // TODO: If non-character-acquiring-pointer-bumping-only flavor exists
-            // use that instead
-            int _c = icserial.get();
-            cout.put(c);
-        }
-        else if(c = cin.peek() != EOF)
-        {
-            int _c = cin.get();
-            ocserial.put(c);
-        }
-#else
-        if(icserial.rdbuf()->in_avail())
-        {
-            int c = icserial.get();
-            cout.put(c);
-        }
-        else if(cin.rdbuf()->in_avail())
-        {
-            int c = cin.get();
-            ocserial.put(c);
-        }
-#endif
-        else
-        {
+        if(!echo_loop())
             Thread::yield();
-            // 10 ms
-            //Thread::wait(10);
-        }
+    }
+}
+
+
+static void echo_nonthread(EventQueue& eq)
+{
+    clog << "Starting ECHO [nonthread] mode" << endl;
+
+    static int counter = 0;
+
+    for(;;)
+    {
+        echo_loop();
+
+        eq.dispatch(1);
     }
 }
 
@@ -91,18 +116,24 @@ struct sim808 :
 
 int main()
 {
-    Thread echoThread;
-
-    EventQueue queue;
-
     clog << "Compiled at " __TIME__ "\r\n";
     //clog << "ciserial initialized as serial = " << icserial.rdbuf()->is_serial() << "\r\n";
+
+    EventQueue queue;
 
     serial_setup();
 
     queue.call_every(1000, blinky);
 
+    // FIX: Idenitfy why on FEATURE_MINIMAL if I don't define atc things don't work
+    // (don't see Compiled at or Starting ECHO mode)
+#ifdef DEBUG_FEATURE_MINIMAL
     ATCommander atc(icserial, ocserial);
+#endif
+#ifndef FEATURE_MINIMAL
+#ifndef DEBUG_FEATURE_MINIMAL
+    ATCommander atc(icserial, ocserial);
+#endif
 
     uint8_t power_level = 1;
 
@@ -167,8 +198,15 @@ int main()
 
     // leave initialized for now, since we are developing still
     //atc.command<http::term>();
+#endif
 
-    echoThread.start(echo2);
+#ifdef FEATURE_THREAD
+    Thread echoThread;
+
+    echoThread.start(echo_thread);
 
     queue.dispatch();
+#else
+    echo_nonthread(queue);
+#endif
 }
