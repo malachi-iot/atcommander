@@ -7,7 +7,33 @@
 
 //#define DEBUG_IS_AVAIL
 
-BufferedSoftSerial serial(PA_10, PB_3);
+class BufferedSoftSerialWrapper : public BufferedSoftSerial
+{
+public:
+    BufferedSoftSerialWrapper(PinName tx, PinName rx) : BufferedSoftSerial(tx, rx) {}
+
+    // The trouble with peek is the xsgetn resolves for BufferedSoftSerial to
+    // the NON buffered Stream::read, which in turn calls _getc, which in turn
+    // goes to SoftSerial::_getc instead of BufferedSoftSerial::_getc, because
+    // BufferedSoftSerial::_getc doesn't exit
+    // luckily read is virtual so we can properly override it here as BufferedSoftSerial should
+    // have done
+    virtual ssize_t read(void* buffer, size_t length) override
+    {
+        auto b = (uint8_t*) buffer;
+
+        while(length--)
+        {
+            while (!readable());
+
+            *b++ = getc();
+        }
+
+        return b - (uint8_t *)buffer;
+    }
+};
+
+BufferedSoftSerialWrapper serial(PA_10, PB_3);
 Serial usb(USBTX, USBRX);
 
 namespace FactUtilEmbedded { namespace std {
