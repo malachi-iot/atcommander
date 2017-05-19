@@ -87,9 +87,97 @@ class Tokenizer
     {
         return is_match(c, delimiters);
     }
+
 public:
+    /**
+     * @brief Matches a string against input
+     *
+     * @param match - string to compare against input
+     * @return true if successful
+     */
+    static bool token_match(fstd::istream& cin, const char* match)
+    {
+        char ch;
+
+#ifdef DEBUG_ATC_MATCH
+        debug_context.dump(fstd::clog);
+        fstd::clog << "Match raw '" << match << "' = ";
+#endif
+
+        while((ch = *match++))
+        {
+            int _ch = cin.peek();
+            if(ch != _ch)
+            {
+#ifdef DEBUG_ATC_MATCH
+                fstd::clog << "false   preset='" << ch << "',incoming='" << _ch << '\'' << fstd::endl;
+#endif
+                return false;
+            }
+            cin.ignore();
+        }
+
+#ifdef DEBUG_ATC_MATCH
+        fstd::clog << "true" << fstd::endl;
+#endif
+        return true;
+    }
 
     size_t tokenize(::fstd::istream& cin, char* input, size_t max);
+};
+
+class Parser : public Tokenizer
+{
+public:
+    template <typename T>
+    bool parse(fstd::istream& cin, T& inputValue) const
+    {
+        // TODO: disallow constants from coming in here
+        //static_assert(T, "Cannot input into a static pointer");
+
+        constexpr uint8_t maxlen = experimental::maxStringLength<T>();
+        char buffer[maxlen + 1];
+
+        size_t n = tokenize(cin, buffer, maxlen);
+#ifdef DEBUG
+        const char* error = validateString<T>(buffer);
+        if(error)
+        {
+            set_error("validation", error);
+            return false;
+        }
+
+        if(n == 0) return false;
+#endif
+        inputValue = fromString<T>(buffer);
+
+#ifdef DEBUG_ATC_INPUT
+        fstd::clog << "Input raw = " << buffer << " / cooked = ";
+        fstd::clog << inputValue << fstd::endl;
+#endif
+
+        return true;
+    }
+
+
+    /**
+     * Matches character input against a strongly typed value
+     *
+     * @tparam T
+     * @param cin
+     * @param match
+     * @return
+     */
+    template <typename T>
+    static bool parse_match(fstd::istream& cin, T match)
+    {
+        constexpr uint8_t size = experimental::maxStringLength<T>();
+        char buf[size + 1];
+
+        toString(buf, match);
+
+        return token_match(cin, buf);
+    }
 };
 
 }
