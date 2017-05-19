@@ -1,20 +1,10 @@
 #pragma once
 
-#include "experimental.h"
 #include "fact/CircularBuffer.h"
 #include <cstdlib>
 #include "fact/string_convert.h"
-#ifdef FEATURE_IOSTREAM
-#include <iostream>
-
-// FIX: still kludgey, need a mini-noduino.h
-typedef const char* PGM_P;
-namespace fstd = ::std;
-#else
-#include "fact/iostream.h"
-
-namespace fstd = FactUtilEmbedded::std;
-#endif
+#include "ios.h"
+#include "experimental.h"
 
 
 #include "fact/string.h"
@@ -371,6 +361,12 @@ public:
         return matched;
     }
 
+    /**
+     * @brief Matches a string against input
+     *
+     * @param match - string to compare against input
+     * @return true if successful
+     */
     bool input_match(const char* match)
     {
         char ch;

@@ -90,7 +90,7 @@ TEST_CASE( "Matching overload tests", "[matching-overload]" )
         const char* k = keyword;
         char ch;
 
-        while(ch = *k++)
+        while((ch = *k++))
         {
             if(!matcher.parse(ch)) break;
         }

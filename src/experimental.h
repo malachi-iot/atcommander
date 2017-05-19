@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "ios.h"
 
 namespace experimental
 {
-
 // all streams here are assumed binary
 
 template <class TIStream>
@@ -63,6 +63,34 @@ public:
     }
 };
 
+
+class Tokenizer
+{
+    const char* delimiters;
+
+    bool is_match(char c, const char* match)
+    {
+        char delim;
+
+        while((delim = *match++))
+            if(delim == c) return true;
+
+#ifdef DEBUG_ATC_MATCH
+        fstd::clog << "Didn't match on char# " << (int) c << fstd::endl;
+#endif
+
+        return false;
+    }
+
+
+    bool is_delimiter(char c)
+    {
+        return is_match(c, delimiters);
+    }
+public:
+
+    size_t tokenize(::fstd::istream& cin, char* input, size_t max);
+};
 
 }
 
