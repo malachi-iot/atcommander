@@ -5,7 +5,7 @@ namespace experimental {
 
 // retrieves a text string in input up to max size
 // leaves any discovered delimiter cached
-size_t Tokenizer::tokenize(fstd::istream& cin, char *input, size_t max)
+size_t Tokenizer::tokenize(fstd::istream& cin, char *input, size_t max) const
 {
     int ch;
     size_t len = 0;

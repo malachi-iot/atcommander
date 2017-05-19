@@ -68,7 +68,7 @@ class Tokenizer
 {
     const char* delimiters;
 
-    bool is_match(char c, const char* match)
+    bool is_match(char c, const char* match) const
     {
         char delim;
 
@@ -83,12 +83,23 @@ class Tokenizer
     }
 
 
-    bool is_delimiter(char c)
+    bool is_delimiter(char c) const
     {
         return is_match(c, delimiters);
     }
 
 public:
+    /*
+    Tokenizer(const char* delimiters) : delimiters(delimiters)
+    {
+
+    } */
+
+    void set_delimiter(const char* delimiters)
+    {
+        this->delimiters = delimiters;
+    }
+
     /**
      * @brief Matches a string against input
      *
@@ -123,7 +134,7 @@ public:
         return true;
     }
 
-    size_t tokenize(::fstd::istream& cin, char* input, size_t max);
+    size_t tokenize(::fstd::istream& cin, char* input, size_t max) const;
 };
 
 class Parser : public Tokenizer
