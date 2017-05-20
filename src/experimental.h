@@ -240,7 +240,7 @@ public:
 #ifndef DEBUG
     static
 #endif
-        bool parse_match(fstd::istream& cin, T match)
+        bool parse_match_fast(fstd::istream& cin, T match)
     {
         constexpr uint8_t size = experimental::maxStringLength<T>();
         char buf[size + 1];
@@ -257,6 +257,17 @@ public:
         toString(buf, match);
 
         return token_match(cin, buf);
+    }
+
+
+    template <typename T>
+    bool parse_match(fstd::istream& cin, T match)
+    {
+        T input;
+
+        if(!parse(cin, input)) return false;
+
+        return input == match;
     }
 };
 

@@ -98,4 +98,12 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
         REQUIRE(result == false);
 
     }
+    GIVEN("String stream: parsing success")
+    {
+        parser.set_delimiter(",");
+
+        bool result = parser.parse_match(s, 5.0F);
+
+        REQUIRE(result);
+    }
 }
