@@ -93,7 +93,7 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
     {
         parser.set_delimiter(",");
 
-        bool result = parser.parse_match(s, 4.0F);
+        bool result = parser.parse_match(s, 4);
 
         REQUIRE(result == false);
 
@@ -102,7 +102,7 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
     {
         parser.set_delimiter(",");
 
-        bool result = parser.parse_match(s, 5.0F);
+        bool result = parser.parse_match(s, 5);
 
         REQUIRE(result);
     }

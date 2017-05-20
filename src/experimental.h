@@ -126,10 +126,6 @@ class Tokenizer
     }
 
 
-    bool is_delimiter(char c) const
-    {
-        return is_match(c, delimiters);
-    }
 protected:
     ErrorTracker<class_name> error;
 
@@ -143,6 +139,11 @@ public:
     void set_delimiter(const char* delimiters)
     {
         this->delimiters = delimiters;
+    }
+
+    bool is_delimiter(char c) const
+    {
+        return is_match(c, delimiters);
     }
 
     /**
@@ -262,14 +263,72 @@ public:
 
     template <typename T>
     bool parse_match(fstd::istream& cin, T match)
+#ifndef DEBUG
+        const
+#endif
     {
         T input;
 
         if(!parse(cin, input)) return false;
 
+#ifdef DEBUG
+        if(input != match)
+            fstd::clog << "parse_match failure: '" << input << "' != expected '" << match << '\'' << fstd::endl;
+#endif
         return input == match;
     }
 };
+
+
+// Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
+class ParserWrapper
+{
+    fstd::istream& cin;
+    Parser parser;
+
+    typedef uint8_t input_processing_flags;
+
+    static constexpr input_processing_flags eat_delimiter_bit = 0x01;
+    // FIX: this is an OUTPUT processing flag
+    static constexpr input_processing_flags auto_delimit_bit = 0x02;
+
+    input_processing_flags flags;
+
+public:
+    ParserWrapper(fstd::istream& cin) : cin(cin) {}
+
+    void set_eat_delimiter()
+    { flags |= eat_delimiter_bit; }
+
+    bool eat_delimiter()
+    { return flags & eat_delimiter_bit; }
+
+    void eat_delimiters(const char* delimiters)
+    {
+        parser.set_delimiter(delimiters);
+        set_eat_delimiter();
+    }
+
+    template <typename T>
+    bool parse(T& inputValue)
+#ifndef DEBUG
+        const
+#endif
+    {
+        bool result = parser.parse(cin, inputValue);
+
+        if(eat_delimiter())
+        {
+            int ch;
+
+            while((ch = cin.peek()) != -1 && parser.is_delimiter(ch))
+            {
+                cin.ignore();
+            }
+        }
+    }
+};
+
 
 }
 
