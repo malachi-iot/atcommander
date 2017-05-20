@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include "ios.h"
 
+#define DEBUG
+
 namespace experimental
 {
 // all streams here are assumed binary
@@ -64,11 +66,52 @@ public:
 };
 
 
+template <const char* subsystem = nullptr>
+class ErrorTracker
+{
+    const char* category;
+    const char* description;
+
+public:
+    void set(const char* category, const char* description)
+    {
+#ifdef DEBUG
+        if(subsystem != nullptr)
+            fstd::cerr << subsystem << ' ';
+
+        fstd::cerr << "error: " << category << ": " << description << fstd::endl;
+#endif
+        this->category = category;
+        this->description = description;
+    }
+
+    ErrorTracker& operator ()(const char* description)
+    {
+        set("general", description);
+        return *this;
+    }
+
+    ErrorTracker& operator ()(const char* category, const char* description)
+    {
+        set(category, description);
+        return *this;
+    }
+};
+
+
 class Tokenizer
 {
+    static constexpr char class_name[] = "Tokenizer";
     const char* delimiters;
 
-    bool is_match(char c, const char* match) const
+    /**
+     * See if one character exists within a string of characters
+     *
+     * @param c
+     * @param match
+     * @return
+     */
+    static bool is_match(char c, const char* match)
     {
         char delim;
 
@@ -87,6 +130,8 @@ class Tokenizer
     {
         return is_match(c, delimiters);
     }
+protected:
+    ErrorTracker<class_name> error;
 
 public:
     /*
@@ -106,9 +151,15 @@ public:
      * @param match - string to compare against input
      * @return true if successful
      */
-    static bool token_match(fstd::istream& cin, const char* match)
+#ifndef DEBUG
+    static
+#endif
+        bool token_match(fstd::istream& cin, const char* match)
     {
         char ch;
+#ifdef DEBUG
+        const char* original_match = match;
+#endif
 
 #ifdef DEBUG_ATC_MATCH
         debug_context.dump(fstd::clog);
@@ -122,6 +173,9 @@ public:
             {
 #ifdef DEBUG_ATC_MATCH
                 fstd::clog << "false   preset='" << ch << "',incoming='" << _ch << '\'' << fstd::endl;
+#endif
+#ifdef DEBUG
+                error("match", original_match);
 #endif
                 return false;
             }
@@ -141,7 +195,10 @@ class Parser : public Tokenizer
 {
 public:
     template <typename T>
-    bool parse(fstd::istream& cin, T& inputValue) const
+    bool parse(fstd::istream& cin, T& inputValue)
+#ifndef DEBUG
+            const
+#endif
     {
         // TODO: disallow constants from coming in here
         //static_assert(T, "Cannot input into a static pointer");
@@ -151,10 +208,10 @@ public:
 
         size_t n = tokenize(cin, buffer, maxlen);
 #ifdef DEBUG
-        const char* error = validateString<T>(buffer);
-        if(error)
+        const char* err = validateString<T>(buffer);
+        if(err)
         {
-            set_error("validation", error);
+            error("validation", err);
             return false;
         }
 
@@ -180,11 +237,23 @@ public:
      * @return
      */
     template <typename T>
-    static bool parse_match(fstd::istream& cin, T match)
+#ifndef DEBUG
+    static
+#endif
+        bool parse_match(fstd::istream& cin, T match)
     {
         constexpr uint8_t size = experimental::maxStringLength<T>();
         char buf[size + 1];
 
+        // FIX: do this differently, instead of:
+        //  converting incoming to-match into a string
+        //  and then comparing the string
+        // instead
+        //  parse incoming from cin into native type
+        //  then compare the native type
+        // 2nd one is more work but more likely to work also
+        // we should keep this one around as "parse_match_fast" because technically
+        // we are bypassing the parse here
         toString(buf, match);
 
         return token_match(cin, buf);

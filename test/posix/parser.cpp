@@ -10,12 +10,14 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
 {
     std::stringstream s;
     char buffer[128];
+    experimental::Parser parser;
+    float val;
 
     s << "5,Token1,Token2";
 
     GIVEN("String stream: tokenizing")
     {
-        experimental::Parser parser;
+        //experimental::Parser parser;
 
         parser.set_delimiter(",");
         parser.tokenize(s, buffer, 128);
@@ -44,7 +46,7 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
     }
     GIVEN("String stream: parsing")
     {
-        experimental::Parser parser;
+        //experimental::Parser parser;
         float val;
 
         parser.set_delimiter(",12\r\n");
@@ -75,5 +77,25 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
         parser.parse(s, val);
 
         REQUIRE(val == 2); */
+    }
+    GIVEN("String stream: parsing error")
+    {
+        parser.set_delimiter(",");
+        parser.parse(s, val);
+
+        REQUIRE(val == 5.0);
+
+        bool result = parser.parse(s, val);
+
+        REQUIRE(result == false);
+    }
+    GIVEN("String stream: parsing error 2")
+    {
+        parser.set_delimiter(",");
+
+        bool result = parser.parse_match(s, 4.0F);
+
+        REQUIRE(result == false);
+
     }
 }

@@ -2,6 +2,7 @@
 
 namespace experimental {
 
+constexpr char Tokenizer::class_name[];
 
 // retrieves a text string in input up to max size
 // leaves any discovered delimiter cached
