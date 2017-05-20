@@ -231,6 +231,8 @@ public:
 
     /**
      * Matches character input against a strongly typed value
+     *  converting incoming to-match into a string
+     *  and then comparing the string
      *
      * @tparam T
      * @param cin
@@ -246,15 +248,6 @@ public:
         constexpr uint8_t size = experimental::maxStringLength<T>();
         char buf[size + 1];
 
-        // FIX: do this differently, instead of:
-        //  converting incoming to-match into a string
-        //  and then comparing the string
-        // instead
-        //  parse incoming from cin into native type
-        //  then compare the native type
-        // 2nd one is more work but more likely to work also
-        // we should keep this one around as "parse_match_fast" because technically
-        // we are bypassing the parse here
         toString(buf, match);
 
         return token_match(cin, buf);
@@ -280,10 +273,31 @@ public:
 };
 
 
-// Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
-class ParserWrapper
+template <class TChar, class TTraits = fstd::char_traits<TChar>>
+class basic_istream_ref
 {
-    fstd::istream& cin;
+protected:
+    typedef fstd::basic_istream<TChar> istream_t;
+    typedef basic_istream_ref<TChar> bir_t;
+
+    istream_t& cin;
+
+public:
+    basic_istream_ref(istream_t& cin) : cin(cin) {}
+
+    template <typename T>
+    bir_t& operator>>(T& value)
+    {
+        cin >> value;
+        return *this;
+    }
+};
+
+
+
+// Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
+class ParserWrapper : basic_istream_ref<char>
+{
     Parser parser;
 
     typedef uint8_t input_processing_flags;
@@ -295,7 +309,7 @@ class ParserWrapper
     input_processing_flags flags;
 
 public:
-    ParserWrapper(fstd::istream& cin) : cin(cin) {}
+    ParserWrapper(fstd::istream& cin) : basic_istream_ref<char>(cin) {}
 
     void set_eat_delimiter()
     { flags |= eat_delimiter_bit; }
@@ -311,9 +325,6 @@ public:
 
     template <typename T>
     bool parse(T& inputValue)
-#ifndef DEBUG
-        const
-#endif
     {
         bool result = parser.parse(cin, inputValue);
 
