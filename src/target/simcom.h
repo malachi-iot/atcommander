@@ -732,7 +732,11 @@ public:
             // TODO: ensure this length matches that provided in suffix
             atc >> length;
             atc.input_newline();
+#ifdef FEATURE_DISCRETE_PARSER
+            atc.read(buf, length);
+#else
             atc.cin.read(buf, length);
+#endif
             atc.check_for_ok();
         }
 

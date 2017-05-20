@@ -98,9 +98,12 @@ public:
     }
 };
 
+class ParserWrapper;
 
 class Tokenizer
 {
+    friend class ParserWrapper;
+
     static constexpr char class_name[] = "Tokenizer";
     const char* delimiters;
 
@@ -291,15 +294,20 @@ public:
         cin >> value;
         return *this;
     }
+
+    bir_t& read(TChar* s, fstd::streamsize n)
+    {
+        cin.read(s, n);
+        return *this;
+    }
 };
 
 
 
 // Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
-class ParserWrapper : basic_istream_ref<char>
+class ParserWrapper : public basic_istream_ref<char>
 {
-    Parser parser;
-
+#ifdef FEATURE_DISCRETE_PARSER_FORMATTER
     typedef uint8_t input_processing_flags;
 
     static constexpr input_processing_flags eat_delimiter_bit = 0x01;
@@ -307,10 +315,15 @@ class ParserWrapper : basic_istream_ref<char>
     static constexpr input_processing_flags auto_delimit_bit = 0x02;
 
     input_processing_flags flags;
+#endif
+
+protected:
+    Parser parser;
 
 public:
     ParserWrapper(fstd::istream& cin) : basic_istream_ref<char>(cin) {}
 
+#ifdef FEATURE_DISCRETE_PARSER_FORMATTER
     void set_eat_delimiter()
     { flags |= eat_delimiter_bit; }
 
@@ -322,12 +335,14 @@ public:
         parser.set_delimiter(delimiters);
         set_eat_delimiter();
     }
+#endif
 
     template <typename T>
     bool parse(T& inputValue)
     {
         bool result = parser.parse(cin, inputValue);
 
+#ifdef FEATURE_DISCRETE_PARSER_FORMATTER
         if(eat_delimiter())
         {
             int ch;
@@ -337,6 +352,22 @@ public:
                 cin.ignore();
             }
         }
+#endif
+    }
+
+    void set_delimiter(const char* delimiters)
+    {
+        parser.set_delimiter(delimiters);
+    }
+
+    bool is_delimiter(char c)
+    {
+        return parser.is_delimiter(c);
+    }
+
+    bool is_match(char c, const char* match)
+    {
+        return parser.is_match(c, match);
     }
 };
 

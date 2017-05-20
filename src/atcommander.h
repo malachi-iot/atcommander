@@ -23,6 +23,8 @@
 //#define DEBUG_SIMULATED
 #define DEBUG_ATC_CONTEXT
 
+#define FEATURE_DISCRETE_PARSER
+
 
 
 namespace layer3 {
@@ -59,10 +61,15 @@ public:
 class ATBuilder;
 
 class ATCommander
+#ifdef FEATURE_DISCRETE_PARSER
+    : public experimental::ParserWrapper
+#endif
 {
     static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
 
+#ifndef FEATURE_DISCRETE_PARSER
     const char* delimiters = WHITESPACE_NEWLINE;
+#endif
 
     char cache = 0;
 
@@ -230,17 +237,30 @@ public:
     // TODO: fix this name
     bool is_cached() { return cache != 0; }
 
+#ifndef FEATURE_DISCRETE_PARSER
     fstd::istream& cin;
+#endif
     fstd::ostream& cout;
 
-    ATCommander(fstd::istream& cin, fstd::ostream& cout) : cin(cin), cout(cout)
+    ATCommander(fstd::istream& cin, fstd::ostream& cout) :
+#ifdef FEATURE_DISCRETE_PARSER
+        ParserWrapper(cin),
+#else
+        cin(cin),
+#endif
+        cout(cout)
     {
 #ifdef DEBUG_ATC_ECHO
         fstd::clog << "ATCommander: Full echo mode" << fstd::endl;
 #endif
+
+#ifdef FEATURE_DISCRETE_PARSER
+        set_delimiter(WHITESPACE_NEWLINE);
+#endif
     }
 
 
+#ifndef FEATURE_DISCRETE_PARSER
     void set_delimiter(const char* delimiters)
     {
         this->delimiters = delimiters;
@@ -251,6 +271,12 @@ public:
     {
         this->delimiters = WHITESPACE_NEWLINE;
     }
+#else
+    void reset_delimiters()
+    {
+        parser.set_delimiter(WHITESPACE_NEWLINE);
+    }
+#endif
 
     int _get()
     {
@@ -329,6 +355,7 @@ public:
 #endif
     }
 
+#ifndef FEATURE_DISCRETE_PARSER
     bool is_match(char c, const char* match)
     {
         char delim;
@@ -347,6 +374,7 @@ public:
     {
         return is_match(c, delimiters);
     }
+#endif
 
     bool input_match(char match)
     {
