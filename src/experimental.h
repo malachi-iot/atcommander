@@ -146,7 +146,7 @@ public:
         // TODO: disallow constants from coming in here
         //static_assert(T, "Cannot input into a static pointer");
 
-        constexpr uint8_t maxlen = experimental::maxStringLength<T>();
+        constexpr uint8_t maxlen = ::experimental::maxStringLength<T>();
         char buffer[maxlen + 1];
 
         size_t n = tokenize(cin, buffer, maxlen);
