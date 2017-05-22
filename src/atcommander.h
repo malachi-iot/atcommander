@@ -28,7 +28,7 @@
 //#define FEATURE_DISCRETE_PARSER
 
 // Do not use istream peek, make our own
-#define FEATURE_ATC_PEEK
+//#define FEATURE_ATC_PEEK
 
 #include "DebugContext.h"
 
@@ -342,13 +342,23 @@ public:
 
 
     // Blocking peek operation with a timeout
-    int peek_timeout_experimental(uint16_t timeout_ms)
+    int peek_timeout_experimental(uint32_t timeout_ms)
     {
+#ifdef FEATURE_ATC_PEEK
+        // no timeouts used old-style ATC peek code, they block more frequently
+        // in other areas
+        return peek();
+#endif
         uint32_t timeout = experimental::millis() + timeout_ms;
         int ch;
 
-        while(((ch = peek()) == EOF) || (experimental::millis() < timeout))
+        while(((ch = peek()) == EOF) && (experimental::millis() < timeout))
             experimental::yield();
+
+#ifdef DEBUG_ATC_INPUT
+        if(ch == -1)
+            fstd::clog << "Timeout while peeking: " << timeout << fstd::endl;
+#endif
 
         return ch;
     }
@@ -364,8 +374,16 @@ public:
     }
 
     // timeout to be used with above timeout experimental functions
-    uint16_t experimental_timeout_ms = 100;
+    uint16_t experimental_timeout_ms = 500;
 
+    // NOTE: herein lies the rub of iostreams
+    // peek for iostreams means block and wait for a character, but then only peek at it once it's available
+    // peek for some other scenarios doesn't block, and returns EOF or similar unless data is available
+    // since iostream blocks, that means peek is the "lightest" call you can make to stoke a retrieval from
+    // the hardware.  since we aren't following that paradigm, we are left with nothing to stoke retrieval
+    // from hardware.  For UARTs this shouldnt be an issue since external parties don't need our help to push
+    // us characters, but might be an issue with other interfaces.  In any case, our version of peek() can still
+    // stoke that input, but it just won't ever block
     int peek_timeout_experimental()
     { return peek_timeout_experimental(experimental_timeout_ms);}
 
@@ -469,7 +487,7 @@ public:
             if(!matcher.parse(ch)) break;
         }
 #else
-        while((ch = peek()) != -1)
+        while((ch = peek_timeout_experimental()) != EOF)
         {
             if(!matcher.parse(ch)) break;
             get();

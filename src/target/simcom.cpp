@@ -49,8 +49,9 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
 {
     // TODO: assert output is not null
 
-    // FIX: this is locking us until we rid ourselves of OLD_WHITESPACE_IGNORE
-    atc.ignore_whitespace_and_newlines();
+    if(atc.peek() != EOF)
+        // FIX: this is locking us until we rid ourselves of OLD_WHITESPACE_IGNORE
+        atc.ignore_whitespace_and_newlines();
 
     // If we get this, we have a PUSH from sim808
     if(atc.peek() == '+')
@@ -63,6 +64,8 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
             ip::receive::CMD,
             nullptr
         };
+        atc.debug_context.set("PUSH");
+
         const char* matched = atc.input_match(keywords);
         output->cmd = matched;
         if(matched == ip::receive::CMD)

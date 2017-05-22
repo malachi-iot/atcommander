@@ -202,6 +202,8 @@ public:
 
                 atc.check_for_ok();
 
+                atc.peek_timeout_experimental(2000); // add extra timeout this way
+
                 atc.ignore_whitespace_and_newlines();
 
                 // If MUX mode (CIPMUX=1) input mux channel and a comma
@@ -539,7 +541,7 @@ public:
                     int ch = atc.get();
                     atc.unget(ch);
 #else
-                    int ch = atc.peek();
+                    int ch = atc.peek_timeout_experimental();
 #endif
 
                     fstd::clog << "SEND phase 1.2" << fstd::endl;

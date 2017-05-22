@@ -35,7 +35,9 @@ bool ATCommander::check_for_ok()
 #endif
 }
 
+#ifdef FEATURE_ATC_PEEK
 #define OLD_WHITESPACE_IGNORE
+#endif
 
 void ATCommander::ignore_whitespace_and_newlines()
 {
@@ -48,7 +50,7 @@ void ATCommander::ignore_whitespace_and_newlines()
 #else
     int ch;
 
-    while((ch = peek()) != EOF)
+    while((ch = peek_timeout_experimental()) != EOF)
     {
         if (is_match((char)ch, WHITESPACE_NEWLINE))
             get();
@@ -58,6 +60,8 @@ void ATCommander::ignore_whitespace_and_newlines()
 #endif
 }
 
+// TODO: upgrade istream to do this using std::ws manipulator ala
+// https://stackoverflow.com/questions/13501862/how-to-properly-use-cin-peek
 void ATCommander::ignore_whitespace()
 {
 #ifdef OLD_WHITESPACE_IGNORE
@@ -69,7 +73,7 @@ void ATCommander::ignore_whitespace()
 #else
     int ch;
 
-    while((ch = peek()) != EOF)
+    while((ch = peek_timeout_experimental()) != EOF)
     {
         if(ch == ' ')
             get();
@@ -109,12 +113,12 @@ bool ATCommander::skip_newline()
     }
 
 #else
-    int ch = peek();
+    int ch = peek_timeout_experimental();
 
     if(ch == 13)
     {
         get();
-        if(peek() == 10)
+        if(peek_timeout_experimental() == 10)
         {
             get();
             return true;
@@ -124,12 +128,16 @@ bool ATCommander::skip_newline()
     {
         get();
         if(peek() == 13)
+        //if(peek_timeout_experimental() == 13)
             get();
 
         // FIX: It's possible that peek() doesn't have CR *yet* and
         // a subsequent call to this function will result in a false
         // since CR alone isn't considered a newline for this particular
         // function
+        // HOWEVER
+        // if we do a timeout here, it frequently burns a lot of time since we are ending on
+        // a newline
         return true;
     }
 #endif
@@ -161,7 +169,7 @@ size_t ATCommander::input(char* input, size_t max)
         // FIX: be sure to check len also
         unget(ch);
 #else
-    while((ch = peek()) != EOF)
+    while((ch = peek_timeout_experimental()) != EOF)
     {
         if(len >= max || is_delimiter(ch)) break;
 

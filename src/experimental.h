@@ -391,7 +391,8 @@ public:
 // better would be to make the FAL (framework abstraction layer)
 inline uint32_t millis()
 {
-    return us_ticker_read() / 1000;
+    uint32_t ms = us_ticker_read() / 1000;
+    return ms;
 }
 
 inline void yield()
