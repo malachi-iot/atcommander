@@ -166,7 +166,7 @@ public:
 #endif
 
 #ifdef DEBUG_ATC_MATCH
-        debug_context.dump(fstd::clog);
+        //debug_context.dump(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = ";
 #endif
 

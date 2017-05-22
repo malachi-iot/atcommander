@@ -23,7 +23,9 @@
 //#define DEBUG_SIMULATED
 #define DEBUG_ATC_CONTEXT
 
-#define FEATURE_DISCRETE_PARSER
+// FIX: This seems to work based on preliminary tests, but I haven't gotten debug_context
+// working with it yet
+//#define FEATURE_DISCRETE_PARSER
 
 
 
