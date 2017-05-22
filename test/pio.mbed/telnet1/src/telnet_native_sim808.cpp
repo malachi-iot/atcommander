@@ -169,6 +169,35 @@ void telnet_loop()
         telnet_send_site_output(c);
     }
 
+#ifdef FEATURE_STATE_MACHINE
+    //atc.ignore_whitespace_and_newlines();
+
+    //if(atc.peek() == '+')
+    {
+        sim808::experimental_statemachine_output output;
+
+        sim808::statemachine(atc, &output);
+
+        if(output.cmd == ip::receive::CMD)
+        {
+            // this is a signal that we should start pinging for data
+            clog << "Detecting data available on channel: " << output.ip_receive.channel << endl;
+        }
+    }
+    /*
+    else
+    {
+        static bool shown = false;
+
+        if(!shown)
+        {
+            clog << "Only have character: " << atc.cin.peek() << endl;
+            shown = true;
+        }
+    } */
+#endif
+
+#ifdef UNUSEDXX
     if(timer.read_ms() > 5000)
     {
         // FIX: If we make this input buffer 256, we error out grabbing remaining_length after response_length
@@ -192,4 +221,5 @@ void telnet_loop()
         // read constantly
         timer.reset();
     }
+#endif
 }

@@ -47,6 +47,7 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
 {
     // TODO: assert output is not null
 
+    // FIX: this is locking us until we rid ourselves of OLD_WHITESPACE_IGNORE
     atc.ignore_whitespace_and_newlines();
 
     // If we get this, we have a PUSH from sim808
@@ -62,6 +63,8 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
             // Getting here means we are alerted to the presence of data
 
             output->ip_receive.channel = 1;
+
+            atc.input_newline();
         }
         else
         {
@@ -76,7 +79,7 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
             atc.getline(dump, sizeof(dump) - 1);
             fstd::clog << "Statemachine default: " << dump << fstd::endl;
         }
-        atc.ignore_whitespace_and_newlines();
+        //atc.ignore_whitespace_and_newlines();
     }
 }
 

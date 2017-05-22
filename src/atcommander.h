@@ -5,7 +5,6 @@
 #include "fact/string_convert.h"
 #include "ios.h"
 #include "experimental.h"
-#include "DebugContext.h"
 
 
 #include "fact/string.h"
@@ -28,6 +27,10 @@
 // working with it yet
 //#define FEATURE_DISCRETE_PARSER
 
+// Do not use istream peek, make our own
+#define FEATURE_ATC_PEEK
+
+#include "DebugContext.h"
 
 
 namespace layer3 {
@@ -74,7 +77,9 @@ class ATCommander
     const char* delimiters = WHITESPACE_NEWLINE;
 #endif
 
+#ifdef FEATURE_ATC_PEEK
     char cache = 0;
+#endif
 
     const char* error_category = nullptr;
     const char* error_description = nullptr;
@@ -204,8 +209,10 @@ public:
     void reset_error() { error_description = nullptr; }
     const char* get_error() { return error_description; }
 
+#ifdef FEATURE_ATC_PEEK
     // TODO: fix this name
     bool is_cached() { return cache != 0; }
+#endif
 
 #ifndef FEATURE_DISCRETE_PARSER
     fstd::istream& cin;
@@ -250,6 +257,7 @@ public:
 
     int _get()
     {
+#ifdef FEATURE_ATC_PEEK
         if(is_cached())
         {
 #ifdef DEBUG_ATC_UNGET
@@ -259,6 +267,7 @@ public:
             cache = 0;
             return temp;
         }
+#endif
 
 #ifdef DEBUG_SIMULATED
         return debugBuffer.available() ? debugBuffer.get() : -1;
@@ -307,17 +316,21 @@ public:
 
     void unget(char ch)
     {
+#ifdef FEATURE_ATC_PEEK
 #ifdef DEBUG_SIMULATED_BROKEN
         // TODO: need circular buffer unget
         //debugBuffer.put(ch);
 #else
         cache = ch;
 #endif
+#else
+        cin.unget();
+#endif
     }
 
     int peek()
     {
-#ifdef DEBUG_SIMULATED
+#if defined(DEBUG_SIMULATED) || defined(FEATURE_ATC_PEEK)
         // FIX: quite broken.  really need that debugBuffer...
         return cache;
 #else

@@ -10,6 +10,8 @@
 
 #include <ctype.h>
 
+#define FEATURE_STATE_MACHINE
+
 // http://m2msupport.net/m2msupport/tutorial-for-simcom-m2m-modules/
 namespace simcom
 {
@@ -215,13 +217,13 @@ public:
 
                 atc.ignore_whitespace_and_newlines();
 
+#ifndef FEATURE_STATE_MACHINE
                 // MODE 1 behavior only (probably)
                 // look for +CIPRXGET=1,n
 
                 atc >> receive::CMD >> ": 1,";
                 uint8_t mux_channel;
                 atc >> mux_channel;
-
                 //fstd::clog << "GOT HERE 1: " << mux_channel;
 
                 atc.skip_newline();
@@ -229,6 +231,7 @@ public:
                 //atc.ignore_whitespace_and_newlines();
 
                 //fstd::clog << "GOT HERE 2";
+#endif
             }
 
             static void response_nomux(ATC atc)
@@ -558,6 +561,9 @@ public:
 
                     fstd::clog << "SEND phase 1.3" << fstd::endl;
 
+                    atc.input_newline();
+
+                    /*
                     // FIX: For some reason, when outputting a 13, we get an extra response
                     // +CIPRXGET: 1,1 and also this next line locks things up in that circumstance
                     // FIX: prone to hanging since it uses peek() command
@@ -567,10 +573,11 @@ public:
                     //  so probably out-of-band-ish from the SEND itself
                     if(atc.peek() == '+')
                     {
-fstd::clog << "Grabbing rcv indicator";
-atc >> "+CIPRXGET: 1,1";
-atc.input_newline();
+                        fstd::clog << "Grabbing rcv indicator";
+                        atc >> "+CIPRXGET: 1,1";
+                        atc.input_newline();
                     }
+                     */
                 }
                 else
                 {
@@ -941,7 +948,7 @@ atc.input_newline();
         };
     };
 
-    void statemachine(ATC cin, experimental_statemachine_output* output);
+    static void statemachine(ATC atc, experimental_statemachine_output* output);
 };
 }
 

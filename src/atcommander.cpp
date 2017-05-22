@@ -35,22 +35,48 @@ bool ATCommander::check_for_ok()
 #endif
 }
 
+#define OLD_WHITESPACE_IGNORE
+
 void ATCommander::ignore_whitespace_and_newlines()
 {
+#ifdef OLD_WHITESPACE_IGNORE
     char ch;
 
     while(is_match(ch = get(), WHITESPACE_NEWLINE));
 
     unget(ch);
+#else
+    int ch;
+
+    while((ch = peek()) != EOF)
+    {
+        if (is_match((char)ch, WHITESPACE_NEWLINE))
+            get();
+        else
+            return;
+    }
+#endif
 }
 
 void ATCommander::ignore_whitespace()
 {
+#ifdef OLD_WHITESPACE_IGNORE
     char ch;
 
     while((ch = get()) == ' ');
 
     unget(ch);
+#else
+    int ch;
+
+    while((ch = peek()) != EOF)
+    {
+        if(ch == ' ')
+            get();
+        else
+            return;
+    }
+#endif
 }
 
 
@@ -59,6 +85,7 @@ bool ATCommander::skip_newline()
 {
     // look for CRLF, LFCR, or LF alone.  CR alone not supported at this time
     ignore_whitespace();
+#ifdef OLD_WHITESPACE_IGNORE
     char ch = get();
     if(ch == 13)
     {
@@ -80,6 +107,32 @@ bool ATCommander::skip_newline()
 
         return true;
     }
+
+#else
+    int ch = peek();
+
+    if(ch == 13)
+    {
+        get();
+        if(peek() == 10)
+        {
+            get();
+            return true;
+        }
+    }
+    else if(ch == 10)
+    {
+        get();
+        if(peek() == 13)
+            get();
+
+        // FIX: It's possible that peek() doesn't have CR *yet* and
+        // a subsequent call to this function will result in a false
+        // since CR alone isn't considered a newline for this particular
+        // function
+        return true;
+    }
+#endif
 
     return false;
 }
