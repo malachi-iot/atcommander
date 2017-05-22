@@ -926,6 +926,22 @@ atc.input_newline();
 
         typedef ATBuilder::assign<bearer_settings>  command;
     };
+
+    struct experimental_statemachine_output
+    {
+        const char* cmd;
+
+        union
+        {
+            struct
+            {
+                uint8_t channel;
+
+            } ip_receive;
+        };
+    };
+
+    void statemachine(ATC cin, experimental_statemachine_output* output);
 };
 }
 

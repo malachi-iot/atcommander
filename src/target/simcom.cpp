@@ -41,4 +41,45 @@ constexpr char generic_at::bearer_settings::CMD[];
 
 constexpr char sms::send::CMD[];
 constexpr char sms::receive::CMD[];
+
+// FIX: rename this to be something like push_handler or receive_push
+void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
+{
+    // TODO: assert output is not null
+
+    atc.ignore_whitespace_and_newlines();
+
+    // If we get this, we have a PUSH from sim808
+    if(atc.peek() == '+')
+    {
+        static const char* keywords[] = { ip::receive::CMD, nullptr };
+        const char* matched = atc.input_match(keywords);
+        output->cmd = matched;
+        if(matched == ip::receive::CMD)
+        {
+            atc >> ": 1,1";
+            fstd::clog << "Statemachine got " << ip::receive::CMD << fstd::endl;
+            // Getting here means we are alerted to the presence of data
+
+            output->ip_receive.channel = 1;
+        }
+        else
+        {
+            // TODO: make a verion of input_match which remembers
+            // findings in an output buffer so that if no match
+            // is found, we still have our hands on what we tried
+            // to match against
+
+            // ignore remainder of line since we don't recognize
+            // this PUSH directive
+            char dump[128];
+            atc.getline(dump, sizeof(dump) - 1);
+            fstd::clog << "Statemachine default: " << dump << fstd::endl;
+        }
+        atc.ignore_whitespace_and_newlines();
+    }
 }
+
+
+}
+
