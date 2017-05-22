@@ -561,7 +561,16 @@ public:
                     // FIX: For some reason, when outputting a 13, we get an extra response
                     // +CIPRXGET: 1,1 and also this next line locks things up in that circumstance
                     // FIX: prone to hanging since it uses peek() command
-                    atc.input_newline();
+                    atc.ignore_whitespace_and_newlines();
+                    //atc.input_newline();
+                    // FIX: not getting to rcv indicator, it must come a little later
+                    //  so probably out-of-band-ish from the SEND itself
+                    if(atc.peek() == '+')
+                    {
+fstd::clog << "Grabbing rcv indicator";
+atc >> "+CIPRXGET: 1,1";
+atc.input_newline();
+                    }
                 }
                 else
                 {
