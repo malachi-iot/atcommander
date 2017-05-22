@@ -6,6 +6,13 @@
 
 #define DEBUG
 
+#ifdef __MBED__
+// for experimental millis() shim
+#include "us_ticker_api.h"
+#elif !defined(ARDUINO)
+#include <time.h>
+#endif
+
 namespace experimental
 {
 // all streams here are assumed binary
@@ -379,6 +386,32 @@ public:
 };
 
 
+#ifdef __MBED__
+// emulate Arduino millis, definitely experimental.
+// better would be to make the FAL (framework abstraction layer)
+inline uint32_t millis()
+{
+    return us_ticker_read() / 1000;
+}
+
+inline void yield()
+{
+}
+#elif !defined(ARDUINO)
+// posix mode
+inline uint32_t millis()
+{
+    struct timespec spec;
+
+    clock_gettime(CLOCK_REALTIME, &spec);
+
+    return spec.tv_nsec / 1000;
+}
+
+inline void yield()
+{
+}
+#endif
 }
 
 namespace FactUtilEmbedded { namespace std {

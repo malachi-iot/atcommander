@@ -340,6 +340,38 @@ public:
 #endif
     }
 
+
+    // Blocking peek operation with a timeout
+    int peek_timeout_experimental(uint16_t timeout_ms)
+    {
+        uint32_t timeout = experimental::millis() + timeout_ms;
+        int ch;
+
+        while(((ch = peek()) == EOF) || (experimental::millis() < timeout))
+            experimental::yield();
+
+        return ch;
+    }
+
+    // Blocking get operation with a timeout
+    int get_timeout_experimental(uint16_t timeout_ms)
+    {
+        int ch = peek_timeout_experimental(timeout_ms);
+
+        if(ch != EOF) get();
+
+        return ch;
+    }
+
+    // timeout to be used with above timeout experimental functions
+    uint16_t experimental_timeout_ms = 100;
+
+    int peek_timeout_experimental()
+    { return peek_timeout_experimental(experimental_timeout_ms);}
+
+    int get_timeout_experimental()
+    { return get_timeout_experimental(); }
+
 #ifndef FEATURE_DISCRETE_PARSER
     bool is_match(char c, const char* match)
     {
