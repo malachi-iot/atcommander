@@ -100,6 +100,12 @@ public:
 
 class ParserWrapper;
 
+struct tokenizer_traits
+{
+    static const char* class_name() { return "Tokenizer"; }
+};
+
+//template <class TTraits = tokenizer_traits>
 class Tokenizer
 {
     friend class ParserWrapper;

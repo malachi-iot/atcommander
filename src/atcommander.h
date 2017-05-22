@@ -5,6 +5,7 @@
 #include "fact/string_convert.h"
 #include "ios.h"
 #include "experimental.h"
+#include "DebugContext.h"
 
 
 #include "fact/string.h"
@@ -117,40 +118,11 @@ protected:
 
 
 public:
-    class
-    {
-#ifdef DEBUG_ATC_CONTEXT
-        char localBuf[2];
-        const char* cmd;
-#endif
-    public:
+    static constexpr char OK[] = "OK";
+    static constexpr char AT[] = "AT";
+    static constexpr char ERROR[] = "ERROR";
 
-        void set(const char* cmd)
-        {
-#ifdef DEBUG_ATC_CONTEXT
-            this->cmd = cmd;
-#endif
-        }
-
-
-        void set(char cmd)
-        {
-#ifdef DEBUG_ATC_CONTEXT
-            this->cmd = localBuf;
-            localBuf[0] = cmd;
-            localBuf[1] = 0;
-#endif
-        }
-
-        void dump(fstd::ostream& clog)
-        {
-#ifdef DEBUG_ATC_CONTEXT
-            fstd::clog << '(' << AT << cmd << ") ";
-#else
-#endif
-        }
-
-    } debug_context;
+    DebugContext<AT> debug_context;
 
     class _error_struct
     {
@@ -231,10 +203,6 @@ public:
     bool is_in_error() { return error_description; }
     void reset_error() { error_description = nullptr; }
     const char* get_error() { return error_description; }
-
-    static constexpr char OK[] = "OK";
-    static constexpr char AT[] = "AT";
-    static constexpr char ERROR[] = "ERROR";
 
     // TODO: fix this name
     bool is_cached() { return cache != 0; }
