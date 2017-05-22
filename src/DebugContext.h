@@ -26,7 +26,7 @@ public:
 #endif
     }
 
-    inline void dump(fstd::ostream& clog)
+    inline void identify(fstd::ostream& clog)
     {
 #ifdef DEBUG_ATC_CONTEXT
         fstd::clog << '(';

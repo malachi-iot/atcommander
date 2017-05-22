@@ -178,7 +178,7 @@ void telnet_loop()
         uint16_t remaining_length;
 
         // TODO: make this if a while once things get moving
-        while(length = telnet_get_site_input(input, sizeof(input), &remaining_length))
+        while((length = telnet_get_site_input(input, sizeof(input), &remaining_length)))
         {
             cout.write((char*)input, length);
 

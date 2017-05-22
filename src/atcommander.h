@@ -351,7 +351,7 @@ public:
         int ch = get();
         bool matched = ch == match;
 #ifdef DEBUG_ATC_MATCH
-        debug_context.dump(fstd::clog);
+        debug_context.identify(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = " << (matched ? "true" : "false - instead got ");
         if(!matched) fstd::clog << '"' << (char)ch << '"';
         fstd::clog << fstd::endl;
@@ -370,7 +370,7 @@ public:
         char ch;
 
 #ifdef DEBUG_ATC_MATCH
-        debug_context.dump(fstd::clog);
+        debug_context.identify(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = ";
 #endif
 
@@ -411,7 +411,7 @@ public:
         }
 
 #ifdef DEBUG_ATC_MATCH
-        debug_context.dump(fstd::clog);
+        debug_context.identify(fstd::clog);
 
         if(!matcher.is_matched())
         {

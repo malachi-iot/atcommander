@@ -359,6 +359,7 @@ public:
             }
         }
 #endif
+        return result;
     }
 
     void set_delimiter(const char* delimiters)
