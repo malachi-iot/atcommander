@@ -146,6 +146,7 @@ size_t ATCommander::input(char* input, size_t max)
     int ch;
     size_t len = 0;
 
+#ifdef FEATURE_ATC_PEEK
     while(!is_delimiter(ch = get()) && len < max && ch != -1)
     {
         *input++ = ch;
@@ -159,6 +160,21 @@ size_t ATCommander::input(char* input, size_t max)
     if(ch != -1)
         // FIX: be sure to check len also
         unget(ch);
+#else
+    while((ch = peek()) != EOF)
+    {
+        if(len >= max || is_delimiter(ch)) break;
+
+        get();
+
+        *input++ = ch;
+        len++;
+    }
+
+    // FIX: check if input can be assigned to still
+    // (ensure we haven't exceeded max)
+    *input = 0;
+#endif
 
     return len;
 }

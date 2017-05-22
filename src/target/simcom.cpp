@@ -42,6 +42,8 @@ constexpr char generic_at::bearer_settings::CMD[];
 constexpr char sms::send::CMD[];
 constexpr char sms::receive::CMD[];
 
+constexpr char generic_at::pdp_deact::CMD[];
+
 // FIX: rename this to be something like push_handler or receive_push
 void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
 {
@@ -53,7 +55,14 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
     // If we get this, we have a PUSH from sim808
     if(atc.peek() == '+')
     {
-        static const char* keywords[] = { ip::receive::CMD, nullptr };
+        static const char* keywords[] =
+        {
+#ifdef FEATURE_PUSH_PDP_DEACT
+            generic_at::pdp_deact::CMD,
+#endif
+            ip::receive::CMD,
+            nullptr
+        };
         const char* matched = atc.input_match(keywords);
         output->cmd = matched;
         if(matched == ip::receive::CMD)
@@ -66,6 +75,12 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
 
             atc.input_newline();
         }
+#ifdef FEATURE_PUSH_PDP_DEACT
+        else if(matched == generic_at::pdp_deact::CMD)
+        {
+            atc.input_newline();
+        }
+#endif
         else
         {
             // TODO: make a verion of input_match which remembers

@@ -314,6 +314,7 @@ public:
     }
 
 
+#if defined(FEATURE_IOS_UNGET) or defined(FEATURE_ATC_PEEK)
     void unget(char ch)
     {
 #ifdef FEATURE_ATC_PEEK
@@ -327,10 +328,11 @@ public:
         cin.unget();
 #endif
     }
+#endif
 
     int peek()
     {
-#if defined(DEBUG_SIMULATED) || defined(FEATURE_ATC_PEEK)
+#if defined(FEATURE_ATC_PEEK)
         // FIX: quite broken.  really need that debugBuffer...
         return cache;
 #else
@@ -389,10 +391,21 @@ public:
 
         while((ch = *match++))
         {
+#ifdef FEATURE_ATC_PEEK
             char _ch = get();
             if(ch != _ch)
             {
                 unget(_ch);
+#else
+            int _ch = peek();
+            if(ch == _ch)
+            {
+                // TODO: use ignore() instead
+                get();
+            }
+            else
+            {
+#endif
 #ifdef DEBUG_ATC_MATCH
                 fstd::clog << "false   preset='" << ch << "',incoming='" << _ch << '\'' << fstd::endl;
 #endif
@@ -418,10 +431,18 @@ public:
         layer3::MultiMatcher matcher(keywords);
         int ch;
 
+#ifdef FEATURE_ATC_PEEK
         while((ch = get()) != -1)
         {
             if(!matcher.parse(ch)) break;
         }
+#else
+        while((ch = peek()) != -1)
+        {
+            if(!matcher.parse(ch)) break;
+            get();
+        }
+#endif
 
 #ifdef DEBUG_ATC_MATCH
         debug_context.identify(fstd::clog);
@@ -438,7 +459,9 @@ public:
 
         if(matcher.is_matched())
         {
+#ifdef FEATURE_ATC_PEEK
             unget(ch);
+#endif
             return matcher.matched();
         }
         else

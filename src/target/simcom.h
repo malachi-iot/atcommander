@@ -11,6 +11,7 @@
 #include <ctype.h>
 
 #define FEATURE_STATE_MACHINE
+#define FEATURE_PUSH_PDP_DEACT
 
 // http://m2msupport.net/m2msupport/tutorial-for-simcom-m2m-modules/
 namespace simcom
@@ -43,6 +44,14 @@ public:
         atc.send_assign("+CSDH", show ? '1' : '0');
         atc.check_for_ok();
     }
+
+    struct pdp_deact
+    {
+        // Indicates GPRS is released by network
+        // AT+CIPSHUT will still be necessary here to clean up IP stack
+        // (if IP stack is being used)
+        static constexpr char CMD[] = "+PDP: DEACT";
+    };
 
     // sets PDP context info:
     //  APN
@@ -87,12 +96,17 @@ public:
             {
                 int ch;
 
+                // NOTE: Pretty sure this code doesn't work as is
+#ifdef FEATURE_ATC_PEEK
                 // We get '>' prompts for every return.
                 // TECHNICALLY we should consume these *before* writing out the message,
                 // but haven't worked out a graceful architecture for that yet
                 while((ch = atc.get()) == '>');
 
                 atc.unget(ch);
+#else
+                while((ch = atc.peek()) == '>') atc.get();
+#endif
 
                 atc.check_for_ok();
             }
@@ -521,8 +535,12 @@ public:
                     // can't use atc.peek() because it resolves down to a full xgetn operation which in turn
                     // resolves down to a BufferedSerial->read operation which itself seems to be broken
                     //if(isdigit(atc.peek()))
+#ifdef FEATURE_ATC_PEEK
                     int ch = atc.get();
                     atc.unget(ch);
+#else
+                    int ch = atc.peek();
+#endif
 
                     fstd::clog << "SEND phase 1.2" << fstd::endl;
 
