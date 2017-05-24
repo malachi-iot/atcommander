@@ -73,7 +73,7 @@ void ATCommander::ignore_whitespace()
 #else
     int ch;
 
-    while((ch = peek_timeout_experimental()) != EOF)
+    while(!ch_valid_data(ch = peek_timeout_experimental()))
     {
         if(ch == ' ')
             get();

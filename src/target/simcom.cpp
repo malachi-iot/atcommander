@@ -51,8 +51,10 @@ void generic_at::statemachine(ATC atc, experimental_statemachine_output* output)
 
     // FIX: change this from >= 0 to something more sensible
     if(atc.getsome() >= 0)
+    {
         // FIX: this is locking us until we rid ourselves of OLD_WHITESPACE_IGNORE
         atc.ignore_whitespace_and_newlines();
+    }
 
     // If we get this, we have a PUSH from sim808
     if(atc.getsome() == '+')

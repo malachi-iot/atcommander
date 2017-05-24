@@ -30,6 +30,8 @@ void sim808_setup()
 
     sim808::experimental::reset(atc);
 
+    clog << "sim808_setup 1" << endl;
+    
     // turn off echo mode
     atc.command_with_echo<sim808::echo>(0);
 

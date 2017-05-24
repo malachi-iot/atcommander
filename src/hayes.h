@@ -53,7 +53,12 @@ public:
     {
         static const char* detect_echo_helper(ATC atc)
         {
+            fstd::clog << "detect_echo_helper 1" << fstd::endl;
+
             atc.ignore_whitespace_and_newlines();
+
+            fstd::clog << "detect_echo_helper 2" << fstd::endl;
+
             static const char* keywords_atz[] = { ATCommander::AT, ATCommander::OK, nullptr };
             const char* matched = atc.input_match(keywords_atz);
             return matched;
@@ -67,17 +72,26 @@ public:
 
             if(matched == ATCommander::AT)
             {
+                fstd::clog << "reset 1.1.0" << fstd::endl;
+
                 // prefix of ATZ, so we're in echo mode.  Read in the Z also
                 atc >> 'Z';
                 // since we're echoing, be sure to read in the newline also
                 atc.input_newline();
+
+                fstd::clog << "reset 1.1.1" << fstd::endl;
+
                 // since this wasn't the OK, be sure to grab that now
                 atc.check_for_ok();
             }
             else
             {
+                fstd::clog << "reset 1.2.0" << fstd::endl;
+
                 atc.input_newline();
             }
+
+            fstd::clog << "reset 2" << fstd::endl;
         }
     };
 };

@@ -356,7 +356,11 @@ public:
 #ifdef FEATURE_IOS_EXPERIMENTAL_GETSOME
     int getsome()
     {
-        return cin.getsome();
+        int ch = cin.getsome();
+
+        //fstd::clog << "getsome returns: " << ch << fstd::endl;
+
+        return ch;
     }
 #else
     int getsome()
@@ -380,11 +384,11 @@ public:
         uint32_t timeout = experimental::millis() + timeout_ms;
         int ch;
 
-        while(!ch_valid_data(ch = getsome()) && (experimental::millis() < timeout))
+        while((!ch_valid_data(ch = getsome())) && (experimental::millis() < timeout))
             experimental::yield();
 
 #ifdef DEBUG_ATC_INPUT
-        if(ch == -1)
+        if(ch < 0)
             fstd::clog << "Timeout while peeking: " << timeout << fstd::endl;
 #endif
 
@@ -515,7 +519,7 @@ public:
             if(!matcher.parse(ch)) break;
         }
 #else
-        while((ch = peek_timeout_experimental()) != EOF)
+        while(ch_valid_data(ch = peek_timeout_experimental()))
         {
             if(!matcher.parse(ch)) break;
             get();
