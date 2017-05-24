@@ -105,7 +105,7 @@ public:
 
                 atc.unget(ch);
 #else
-                while((ch = atc.peek()) == '>') atc.get();
+                while((ch = atc.getsome()) == '>') atc.get();
 #endif
 
                 atc.check_for_ok();

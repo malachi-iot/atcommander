@@ -127,7 +127,7 @@ bool ATCommander::skip_newline()
     else if(ch == 10)
     {
         get();
-        if(peek() == 13)
+        if(getsome() == 13)
         //if(peek_timeout_experimental() == 13)
             get();
 

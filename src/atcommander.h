@@ -330,6 +330,18 @@ public:
     }
 #endif
 
+    // checks to make sure ch is not EOF or NODATA value
+    template <class TTraits = fstd::char_traits<char>>
+    static inline bool ch_valid_data(int ch)
+    {
+#ifdef FEATURE_IOS_EXPERIMENTAL_TRAIT_NODATA
+        if(ch == TTraits::nodata()) return false;
+#endif
+        if(ch == TTraits::eof()) return false;
+
+        return true;
+    }
+
     int peek()
     {
 #if defined(FEATURE_ATC_PEEK)
@@ -339,6 +351,22 @@ public:
         return cin.peek();
 #endif
     }
+
+
+#ifdef FEATURE_IOS_EXPERIMENTAL_GETSOME
+    int getsome()
+    {
+        return cin.getsome();
+    }
+#else
+    int getsome()
+    {
+        if(cin.rdbuf()->in_avail()) return cin.peek();
+
+        // FIX: shore this up, if we keep this version of getsome around
+        return -2;
+    }
+#endif
 
 
     // Blocking peek operation with a timeout
@@ -352,7 +380,7 @@ public:
         uint32_t timeout = experimental::millis() + timeout_ms;
         int ch;
 
-        while(((ch = peek()) == EOF) && (experimental::millis() < timeout))
+        while(!ch_valid_data(ch = getsome()) && (experimental::millis() < timeout))
             experimental::yield();
 
 #ifdef DEBUG_ATC_INPUT
@@ -447,7 +475,7 @@ public:
             {
                 unget(_ch);
 #else
-            int _ch = peek();
+            int _ch = getsome();
             if(ch == _ch)
             {
                 // TODO: use ignore() instead

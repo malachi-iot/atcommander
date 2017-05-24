@@ -185,7 +185,7 @@ public:
 
         while((ch = *match++))
         {
-            int _ch = cin.peek();
+            int _ch = cin.getsome();
             if(ch != _ch)
             {
 #ifdef DEBUG_ATC_MATCH
