@@ -3,7 +3,12 @@
         "enable-frab": {
             "help": "Enabled framework abstraction layer",
             "macro_name": "FEATURE_FRAB",
-            "value": 0
+            "value": 1
+        },
+        "enable-istream-timeout": {
+            "help": "Enabled non-standard istream timeout extensions",
+            "macro_name": "FEATURE_IOS_TIMEOUT",
+            "value": 10000
         }
     }
 }

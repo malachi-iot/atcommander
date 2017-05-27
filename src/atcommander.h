@@ -27,10 +27,11 @@
 // working with it yet
 //#define FEATURE_DISCRETE_PARSER
 
-// Do not use istream peek, make our own
-//#define FEATURE_ATC_PEEK
-
 #include "DebugContext.h"
+
+#ifdef FEATURE_FRAB
+#include <frab/systime.h>
+#endif
 
 
 namespace layer3 {
@@ -75,10 +76,6 @@ class ATCommander
 
 #ifndef FEATURE_DISCRETE_PARSER
     const char* delimiters = WHITESPACE_NEWLINE;
-#endif
-
-#ifdef FEATURE_ATC_PEEK
-    char cache = 0;
 #endif
 
     const char* error_category = nullptr;
@@ -209,11 +206,6 @@ public:
     void reset_error() { error_description = nullptr; }
     const char* get_error() { return error_description; }
 
-#ifdef FEATURE_ATC_PEEK
-    // TODO: fix this name
-    bool is_cached() { return cache != 0; }
-#endif
-
 #ifndef FEATURE_DISCRETE_PARSER
     fstd::istream& cin;
 #endif
@@ -257,18 +249,6 @@ public:
 
     int _get()
     {
-#ifdef FEATURE_ATC_PEEK
-        if(is_cached())
-        {
-#ifdef DEBUG_ATC_UNGET
-            fstd::clog << "Yanking from a previous unget: " << (int)cache << fstd::endl;
-#endif
-            char temp = cache;
-            cache = 0;
-            return temp;
-        }
-#endif
-
 #ifdef DEBUG_SIMULATED
         return debugBuffer.available() ? debugBuffer.get() : -1;
 #else
@@ -314,19 +294,10 @@ public:
     }
 
 
-#if defined(FEATURE_IOS_UNGET) or defined(FEATURE_ATC_PEEK)
+#if defined(FEATURE_IOS_UNGET)
     void unget(char ch)
     {
-#ifdef FEATURE_ATC_PEEK
-#ifdef DEBUG_SIMULATED_BROKEN
-        // TODO: need circular buffer unget
-        //debugBuffer.put(ch);
-#else
-        cache = ch;
-#endif
-#else
         cin.unget();
-#endif
     }
 #endif
 
@@ -344,54 +315,50 @@ public:
 
     int peek()
     {
-#if defined(FEATURE_ATC_PEEK)
-        // FIX: quite broken.  really need that debugBuffer...
-        return cache;
-#else
         return cin.peek();
-#endif
     }
 
 
 #ifdef FEATURE_IOS_EXPERIMENTAL_GETSOME
-    int getsome()
-    {
-        int ch = cin.getsome();
-
-        //fstd::clog << "getsome returns: " << ch << fstd::endl;
-
-        return ch;
-    }
+    int getsome() { return cin.getsome(); }
 #else
     int getsome()
     {
         if(cin.rdbuf()->in_avail()) return cin.peek();
 
         // FIX: shore this up, if we keep this version of getsome around
-        return -2;
+#ifdef FEATURE_IOSTREAM
+        // FIX: getsome is 100% broken for IOSTREAM scenarios, in_avail just doesnt operate how
+        // we'd like
+        return EOF;
+#else
+#ifdef FEATURE_IOS_TIMEOUT
+        return fstd::istream::traits_type::nodata();
+#else
+#warning "Enable FEATURE_IOS_TIMEOUT for non-standard Traits::nodata() availability"
+        return fstd::istream::traits_type::eof();
+#endif
+#endif
     }
 #endif
 
 
     // Blocking peek operation with a timeout
-    int peek(uint32_t timeout_ms)
+    int peek(uint16_t timeout_ms)
     {
-
 #ifdef FEATURE_IOSTREAM
         // standard C++ iostream is not capable of this operation, so approximate it
         // with non-timeoutable-peek
         return peek();
 #else
-
-#ifdef FEATURE_ATC_PEEK
-        // no timeouts used old-style ATC peek code, they block more frequently
-        // in other areas
-        return peek();
-#endif
-        uint32_t timeout = experimental::millis() + timeout_ms;
+#ifdef FEATURE_IOS_TIMEOUT
+        return cin.peek(timeout_ms);
+#else
+#ifdef FEATURE_FRAB
+        uint32_t timeout = framework_abstraction::millis() + timeout_ms;
         int ch;
 
-        while((!ch_valid_data(ch = getsome())) && (experimental::millis() < timeout))
+        while((!ch_valid_data(ch = getsome())) && (framework_abstraction::millis() < timeout))
             experimental::yield();
 
 #ifdef DEBUG_ATC_INPUT
@@ -400,6 +367,8 @@ public:
 #endif
 
         return ch;
+#endif
+#endif
 #endif
     }
 
@@ -478,12 +447,6 @@ public:
 
         while((ch = *match++))
         {
-#ifdef FEATURE_ATC_PEEK
-            char _ch = get();
-            if(ch != _ch)
-            {
-                unget(_ch);
-#else
             int _ch = getsome();
             if(ch == _ch)
             {
@@ -492,7 +455,6 @@ public:
             }
             else
             {
-#endif
 #ifdef DEBUG_ATC_MATCH
                 fstd::clog << "false   preset='" << ch << "',incoming='" << _ch << '\'' << fstd::endl;
 #endif
@@ -518,18 +480,11 @@ public:
         layer3::MultiMatcher matcher(keywords);
         int ch;
 
-#ifdef FEATURE_ATC_PEEK
-        while((ch = get()) != -1)
-        {
-            if(!matcher.parse(ch)) break;
-        }
-#else
         while(ch_valid_data(ch = peek_timeout_experimental()))
         {
             if(!matcher.parse(ch)) break;
             get();
         }
-#endif
 
 #ifdef DEBUG_ATC_MATCH
         debug_context.identify(fstd::clog);
@@ -546,9 +501,6 @@ public:
 
         if(matcher.is_matched())
         {
-#ifdef FEATURE_ATC_PEEK
-            unget(ch);
-#endif
             return matcher.matched();
         }
         else
