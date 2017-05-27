@@ -11,7 +11,7 @@ size_t Tokenizer::tokenize(fstd::istream& cin, char *input, size_t max) const
     int ch;
     size_t len = 0;
 
-    while (!is_delimiter(ch = cin.getsome()) && len < max && ch >= 0)
+    while (!is_delimiter(ch = cin.peek()) && len < max && ch >= 0)
     {
         *input++ = ch;
         len++;

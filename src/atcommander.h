@@ -376,6 +376,13 @@ public:
     // Blocking peek operation with a timeout
     int peek_timeout_experimental(uint32_t timeout_ms)
     {
+
+#ifdef FEATURE_IOSTREAM
+        // standard C++ iostream is not capable of this operation, so approximate it
+        // with non-timeoutable-peek
+        return peek();
+#else
+
 #ifdef FEATURE_ATC_PEEK
         // no timeouts used old-style ATC peek code, they block more frequently
         // in other areas
@@ -393,6 +400,7 @@ public:
 #endif
 
         return ch;
+#endif
     }
 
     // Blocking get operation with a timeout

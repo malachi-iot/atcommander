@@ -165,6 +165,8 @@ public:
     /**
      * @brief Matches a string against input
      *
+     * This is a blocking function (via peek)
+     *
      * @param match - string to compare against input
      * @return true if successful
      */
@@ -185,7 +187,8 @@ public:
 
         while((ch = *match++))
         {
-            int _ch = cin.getsome();
+            int _ch = cin.peek();
+
             if(ch != _ch)
             {
 #ifdef DEBUG_ATC_MATCH
@@ -295,6 +298,7 @@ class basic_istream_ref
 protected:
     typedef fstd::basic_istream<TChar> istream_t;
     typedef basic_istream_ref<TChar> bir_t;
+    typedef typename TTraits::int_type int_type;
 
     istream_t& cin;
 
@@ -313,6 +317,8 @@ public:
         cin.read(s, n);
         return *this;
     }
+
+    int_type peek() { return cin.peek(); }
 };
 
 
