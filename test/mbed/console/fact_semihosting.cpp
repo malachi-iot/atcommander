@@ -41,6 +41,7 @@ namespace FactUtilEmbedded { namespace std {
 ostream cout(usb);
 istream cin(usb);
 ostream& clog = cout;
+ostream& cerr = cout;
 
 }}
 

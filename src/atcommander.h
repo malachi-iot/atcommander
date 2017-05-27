@@ -35,6 +35,8 @@
 #endif
 
 
+//#define DEBUG_ATC_LEGACY_COUT
+
 namespace layer3 {
 
 // TODO: revisit name of this class
@@ -76,6 +78,9 @@ struct atc_traits
 class ATCommander
 #ifdef FEATURE_DISCRETE_PARSER
     : public experimental::ParserWrapper<atc_traits>
+#endif
+#ifndef DEBUG_ATC_LEGACY_COUT
+    , public experimental::basic_ostream_ref<char>
 #endif
 {
     static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
@@ -221,7 +226,9 @@ public:
 #ifndef FEATURE_DISCRETE_PARSER
     fstd::istream& cin;
 #endif
+#ifdef DEBUG_ATC_LEGACY_COUT
     fstd::ostream& cout;
+#endif
 
     ATCommander(fstd::istream& cin, fstd::ostream& cout) :
 #ifdef FEATURE_DISCRETE_PARSER
@@ -229,7 +236,11 @@ public:
 #else
         cin(cin),
 #endif
+#ifdef DEBUG_ATC_LEGACY_COUT
         cout(cout)
+#else
+        experimental::basic_ostream_ref<char>(cout)
+#endif
     {
 #ifdef DEBUG_ATC_ECHO
         fstd::clog << "ATCommander: Full echo mode" << fstd::endl;
@@ -384,6 +395,7 @@ public:
 #endif
     }
 
+#ifdef UNUSED
     // Blocking get operation with a timeout
     int get_timeout_experimental(uint16_t timeout_ms)
     {
@@ -393,6 +405,7 @@ public:
 
         return ch;
     }
+#endif
 
     // timeout to be used with above timeout experimental functions
     uint16_t experimental_timeout_ms = 500;
@@ -448,6 +461,18 @@ public:
      * @param match - string to compare against input
      * @return true if successful
      */
+#ifdef FEATURE_DISCRETE_PARSER_BROKEN
+    // On CIPSHUT it flakes out sometimes
+    // On CIPSTART it looks like it's gonna flake out but then doesn't
+    // #1 Smells like timeout-related and indeed, this one uses getsome()
+    // but token_match uses regular (as it should) peek
+    // #2 although #1 is true, experimentation shows adding timeout awareness doesn't sizeably
+    // change behavior (still gets out of sync)
+    bool input_match(const char* match)
+    {
+        return parser.token_match(cin, match);
+    }
+#else
     bool input_match(const char* match)
     {
         char ch;
@@ -479,6 +504,7 @@ public:
 #endif
         return true;
     }
+#endif
 
 
     /**
@@ -520,6 +546,7 @@ public:
             return nullptr;
     }
 
+#ifdef UNUSED
     // FIX: Right now hard-wired to full-line input matching
     // FIX: Also preallocates big buffer for that
     const char* input_match_old(const char** keywords)
@@ -537,8 +564,20 @@ public:
 #endif
         return result;
     }
+#endif
 
 
+    /**
+     * funny name so that we don't get overload collision on input_match(char*)
+     *
+     * NOTE: Parser replacement is 'parse_match_fast' notice there are two different
+     * approaches in there
+     * NOTE: Refactoring should be easy insofar as naming, since new naming of parse_match
+     * does not collide with token_match
+     * @tparam T
+     * @param match
+     * @return
+     */
     template <typename T>
     bool _input_match(T match)
     {
@@ -558,6 +597,11 @@ public:
 
     template <typename T>
     bool input(T& inputValue)
+#ifdef FEATURE_DISCRETE_PARSER
+    {
+        return parse(inputValue);
+    }
+#else
     {
         // TODO: disallow constants from coming in here
         //static_assert(T, "Cannot input into a static pointer");
@@ -585,6 +629,7 @@ public:
 
         return true;
     }
+#endif
 
     /*
     template <typename T>
@@ -607,6 +652,7 @@ public:
         return *this;
     } */
 
+#ifdef DEBUG_ATC_LEGACY_COUT
     void write(const char* s, fstd::streamsize len)
     {
 #ifdef DEBUG_ATC_OUTPUT
@@ -635,7 +681,8 @@ public:
         cout << outputValue;
         return *this;
     }
-
+#endif
+    
     // retrieve and ignore all whitespace and newlines
     // leaves non-whitespace/newline character cached
     void ignore_whitespace_and_newlines();

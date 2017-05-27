@@ -347,10 +347,53 @@ public:
 };
 
 
+template <class TChar, class TTraits = fstd::char_traits<TChar>>
+class basic_ostream_ref
+{
+protected:
+    typedef fstd::basic_ostream <TChar> ostream_t;
+    typedef basic_ostream_ref<TChar> bor_t;
+    typedef typename TTraits::int_type int_type;
+
+    ostream_t& cout;
+
+public:
+    basic_ostream_ref(ostream_t& cout) : cout(cout) {}
+
+    void write(const char* s, fstd::streamsize len)
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog.write(s, len);
+#endif
+
+        cout.write(s, len);
+    }
+
+    void put(char ch)
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog.put(ch);
+#endif
+
+        cout.put(ch);
+    }
+
+
+    template <typename T>
+    bor_t& operator<<(T outputValue)
+    {
+#ifdef DEBUG_ATC_OUTPUT
+        fstd::clog << outputValue;
+#endif
+        cout << outputValue;
+        return *this;
+    }
+};
 
 // Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
 template <class TParserTraits = tokenizer_traits>
-class ParserWrapper : public basic_istream_ref<char>
+class ParserWrapper :
+        public basic_istream_ref<char>
 {
 #ifdef FEATURE_DISCRETE_PARSER_FORMATTER
     typedef uint8_t input_processing_flags;
