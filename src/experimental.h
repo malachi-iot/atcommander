@@ -109,6 +109,9 @@ public:
         set(category, description);
         return *this;
     }
+
+    const char* get_category() { return category; }
+    const char* get_description() { return description; }
 };
 
 template <class TParserTraits>
@@ -154,7 +157,9 @@ public:
     typedef TTraits traits_t;
 
 protected:
+#ifdef DEBUG
     ErrorTracker<traits_t::subsystem_name> error;
+#endif
 
     DebugContext<traits_t::subsystem_name> debug_context;
 
@@ -360,8 +365,21 @@ class ParserWrapper : public basic_istream_ref<char>
 protected:
     Parser<TParserTraits> parser;
 
+#ifdef FEATURE_PARSER_ERRORTRACKER
+    void reset_error() { parser.error(nullptr, nullptr); }
+    const char* get_error() { return parser.error.get_category(); }
+    void set_error(const char* category, const char* description)
+    {
+        parser.error(category, description);
+    }
+#endif
+
 public:
     ParserWrapper(fstd::istream& cin) : basic_istream_ref<char>(cin) {}
+
+#ifdef FEATURE_PARSER_ERRORTRACKER
+    bool is_in_error() { return parser.error.get_description(); }
+#endif
 
     // FIX: temporary/debug only.  interested parties should eventually
     // use an accessor call or directly reference parser

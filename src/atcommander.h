@@ -84,8 +84,10 @@ class ATCommander
     const char* delimiters = WHITESPACE_NEWLINE;
 #endif
 
+#ifndef FEATURE_PARSER_ERRORTRACKER
     const char* error_category = nullptr;
     const char* error_description = nullptr;
+#endif
 
     template <typename T>
     friend ATCommander& operator >>(ATCommander& atc, T);
@@ -95,6 +97,7 @@ class ATCommander
     // TODO: callback/event mechanism to fire when errors happen
 
 protected:
+#ifndef FEATURE_PARSER_ERRORTRACKER
     void set_error(const char* error, const char* description)
     {
 #ifdef DEBUG
@@ -103,7 +106,7 @@ protected:
         this->error_category = error;
         this->error_description = description;
     }
-
+#endif
 
     void _send() {}
 
@@ -150,7 +153,6 @@ public:
         void set_at_result() { _status |= at_result_bit; }
 
     } error;
-
 
     struct _experimental
     {
@@ -210,9 +212,11 @@ public:
 #endif
 
 
+#ifndef FEATURE_PARSER_ERRORTRACKER
     bool is_in_error() { return error_description; }
     void reset_error() { error_description = nullptr; }
     const char* get_error() { return error_description; }
+#endif
 
 #ifndef FEATURE_DISCRETE_PARSER
     fstd::istream& cin;
