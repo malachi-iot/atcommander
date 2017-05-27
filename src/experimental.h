@@ -4,10 +4,14 @@
 #include <stddef.h>
 #include "ios.h"
 
+#define DEBUG_ATC_MATCH
+#define DEBUG_ATC_CONTEXT
+
 #define DEBUG
 
 #ifdef __MBED__
 // for experimental millis() shim
+#include <Thread.h>
 #include "us_ticker_api.h"
 #elif !defined(ARDUINO)
 #include <time.h>
@@ -107,22 +111,23 @@ public:
     }
 };
 
+template <class TParserTraits>
 class ParserWrapper;
 
 struct tokenizer_traits
 {
-    static const char* class_name() { return "Tokenizer"; }
+    //static constexpr char* subsystem_name = "Tokenizer";
+    //static constexpr char* subsystem_name() { return "Tokenizer"; }
+    static constexpr char subsystem_name[] = "Tokenizer";
 };
 
-//template <class TTraits = tokenizer_traits>
+
+template <class TTraits = tokenizer_traits>
 class Tokenizer
 {
-    friend class ParserWrapper;
+    friend class ParserWrapper<TTraits>;
 
-    static constexpr char class_name[] = "Tokenizer";
     const char* delimiters;
-
-    DebugContext<class_name> debug_context;
 
     /**
      * See if one character exists within a string of characters
@@ -139,15 +144,19 @@ class Tokenizer
             if(delim == c) return true;
 
 #ifdef DEBUG_ATC_MATCH
-        fstd::clog << "Didn't match on char# " << (int) c << fstd::endl;
+        //fstd::clog << "Didn't match on char# " << (int) c << fstd::endl;
 #endif
 
         return false;
     }
 
+public:
+    typedef TTraits traits_t;
 
 protected:
-    ErrorTracker<class_name> error;
+    ErrorTracker<traits_t::subsystem_name> error;
+
+    DebugContext<traits_t::subsystem_name> debug_context;
 
 public:
     /*
@@ -215,7 +224,8 @@ public:
     size_t tokenize(::fstd::istream& cin, char* input, size_t max) const;
 };
 
-class Parser : public Tokenizer
+template <class TTraits = tokenizer_traits>
+class Parser : public Tokenizer<TTraits>
 {
 public:
     template <typename T>
@@ -230,12 +240,12 @@ public:
         constexpr uint8_t maxlen = ::experimental::maxStringLength<T>();
         char buffer[maxlen + 1];
 
-        size_t n = tokenize(cin, buffer, maxlen);
+        size_t n = this->tokenize(cin, buffer, maxlen);
 #ifdef DEBUG
         const char* err = validateString<T>(buffer);
         if(err)
         {
-            error("validation", err);
+            this->error("validation", err);
             return false;
         }
 
@@ -285,6 +295,10 @@ public:
     {
         T input;
 
+#ifdef DEBUG_ATC_MATCH
+        this->debug_context.identify(fstd::clog);
+#endif
+
         if(!parse(cin, input)) return false;
 
 #ifdef DEBUG
@@ -330,6 +344,7 @@ public:
 
 
 // Ease off this one for now until we try Parser/Tokenizer in more real world scenarios
+template <class TParserTraits = tokenizer_traits>
 class ParserWrapper : public basic_istream_ref<char>
 {
 #ifdef FEATURE_DISCRETE_PARSER_FORMATTER
@@ -343,10 +358,14 @@ class ParserWrapper : public basic_istream_ref<char>
 #endif
 
 protected:
-    Parser parser;
+    Parser<TParserTraits> parser;
 
 public:
     ParserWrapper(fstd::istream& cin) : basic_istream_ref<char>(cin) {}
+
+    // FIX: temporary/debug only.  interested parties should eventually
+    // use an accessor call or directly reference parser
+    DebugContext<TParserTraits::subsystem_name>& debug_context = parser.debug_context;
 
 #ifdef FEATURE_DISCRETE_PARSER_FORMATTER
     void set_eat_delimiter()
@@ -397,35 +416,9 @@ public:
     }
 };
 
-
-#ifdef __MBED__
-// emulate Arduino millis, definitely experimental.
-// better would be to make the FAL (framework abstraction layer)
-inline uint32_t millis()
-{
-    uint32_t ms = us_ticker_read() / 1000;
-    return ms;
 }
 
-inline void yield()
-{
-}
-#elif !defined(ARDUINO)
-// posix mode
-inline uint32_t millis()
-{
-    struct timespec spec;
-
-    clock_gettime(CLOCK_REALTIME, &spec);
-
-    return spec.tv_nsec / 1000;
-}
-
-inline void yield()
-{
-}
-#endif
-}
+#include "Tokenizer.hpp"
 
 namespace FactUtilEmbedded { namespace std {
 

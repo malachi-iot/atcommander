@@ -5,6 +5,8 @@ constexpr char ATCommander::AT[];
 constexpr char ATCommander::ERROR[];
 constexpr char ATCommander::WHITESPACE_NEWLINE[];
 
+constexpr char atc_traits::subsystem_name[];
+
 #define FEATURE_OK_ERROR_CHECK
 
 bool ATCommander::check_for_ok()

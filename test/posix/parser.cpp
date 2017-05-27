@@ -10,7 +10,7 @@ TEST_CASE( "Experimental parser tests", "[parser-exp]" )
 {
     std::stringstream s;
     char buffer[128];
-    experimental::Parser parser;
+    experimental::Parser<> parser;
     float val;
 
     s << "5,Token1,Token2";

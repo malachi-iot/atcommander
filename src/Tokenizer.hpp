@@ -1,12 +1,14 @@
-#include "atcommander.h"
+//#include "atcommander.h"
 
 namespace experimental {
 
-constexpr char Tokenizer::class_name[];
+//template<class TTraits>
+//constexpr char Tokenizer<TTraits>::class_name[];
 
+template<class TTraits>
 // retrieves a text string in input up to max size
 // leaves any discovered delimiter cached
-size_t Tokenizer::tokenize(fstd::istream& cin, char *input, size_t max) const
+size_t Tokenizer<TTraits>::tokenize(fstd::istream& cin, char *input, size_t max) const
 {
     int ch;
     size_t len = 0;

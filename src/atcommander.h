@@ -68,9 +68,14 @@ public:
 
 class ATBuilder;
 
+struct atc_traits
+{
+    static constexpr char subsystem_name[] = "AT";
+};
+
 class ATCommander
 #ifdef FEATURE_DISCRETE_PARSER
-    : public experimental::ParserWrapper
+    : public experimental::ParserWrapper<atc_traits>
 #endif
 {
     static constexpr char WHITESPACE_NEWLINE[] = " \r\n";
@@ -125,7 +130,9 @@ public:
     static constexpr char AT[] = "AT";
     static constexpr char ERROR[] = "ERROR";
 
+#ifndef FEATURE_DISCRETE_PARSER
     DebugContext<AT> debug_context;
+#endif
 
     class _error_struct
     {
@@ -360,7 +367,7 @@ public:
         int ch;
 
         while((!ch_valid_data(ch = getsome())) && (framework_abstraction::millis() < timeout))
-            experimental::yield();
+            framework_abstraction::yield();
 
 #ifdef DEBUG_ATC_INPUT
         if(ch < 0)
