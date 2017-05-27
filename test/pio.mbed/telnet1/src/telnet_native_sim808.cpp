@@ -31,7 +31,7 @@ void sim808_setup()
     sim808::experimental::reset(atc);
 
     clog << "sim808_setup 1" << endl;
-    
+
     // turn off echo mode
     atc.command_with_echo<sim808::echo>(0);
 
@@ -75,7 +75,7 @@ void telnet_setup()
     //atc.command<ip::shutdown>();
     ip::shutdown::command::request(atc);
     //wait_ms(5000); // shutdown takes some time to run
-    atc.peek_timeout_experimental(5000);
+    atc.peek(5000);
     ip::shutdown::command::response(atc);
 
     atc.command<ip::mux>(true); // turn on multiconnection mode
@@ -93,7 +93,7 @@ void telnet_setup()
 
     //atc.command<ip::start>("TCP", "rainmaker.wunderground.com", 23, 1);
     ip::start::command::request(atc, sim808::TCP, "rainmaker.wunderground.com", 23, 1);
-    atc.peek_timeout_experimental(5000);
+    atc.peek(5000);
     ip::start::command::response(atc, true); // process response in multiconnection mode
 
     // FIX: still need response handler for ip::start
@@ -117,7 +117,7 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length, uint16_
     uint16_t remaining_length = 0;
 
     ip::receive::command::request(atc, '2', mux, request_length);
-    atc.peek_timeout_experimental(5000);
+    atc.peek(5000);
     ip::receive::command::response(atc, 2, mux, &response_length, &remaining_length);
 
     //clog << "response_length (2): " << response_length;
@@ -161,7 +161,7 @@ void telnet_send_site_output(char c)
     //Thread::yield();
     atc << c;
 
-    atc.peek_timeout_experimental(1000);
+    atc.peek(1000);
     atc.ignore_whitespace_and_newlines();
 
     //Thread::yield();

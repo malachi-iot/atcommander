@@ -123,7 +123,7 @@ bool ATCommander::skip_newline()
     {
         get();
         if(getsome() == 13)
-        //if(peek_timeout_experimental() == 13)
+        //if(peek() == 13)
             get();
 
         // FIX: It's possible that peek() doesn't have CR *yet* and

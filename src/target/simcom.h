@@ -202,7 +202,7 @@ public:
 
                 atc.check_for_ok();
 
-                atc.peek_timeout_experimental(2000); // add extra timeout this way
+                atc.peek(2000); // add extra timeout this way
 
                 atc.ignore_whitespace_and_newlines();
 

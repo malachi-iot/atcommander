@@ -374,7 +374,7 @@ public:
 
 
     // Blocking peek operation with a timeout
-    int peek_timeout_experimental(uint32_t timeout_ms)
+    int peek(uint32_t timeout_ms)
     {
 
 #ifdef FEATURE_IOSTREAM
@@ -406,7 +406,7 @@ public:
     // Blocking get operation with a timeout
     int get_timeout_experimental(uint16_t timeout_ms)
     {
-        int ch = peek_timeout_experimental(timeout_ms);
+        int ch = peek(timeout_ms);
 
         if(ch != EOF) get();
 
@@ -425,10 +425,7 @@ public:
     // us characters, but might be an issue with other interfaces.  In any case, our version of peek() can still
     // stoke that input, but it just won't ever block
     int peek_timeout_experimental()
-    { return peek_timeout_experimental(experimental_timeout_ms);}
-
-    int get_timeout_experimental()
-    { return get_timeout_experimental(); }
+    { return peek(experimental_timeout_ms);}
 
 #ifndef FEATURE_DISCRETE_PARSER
     bool is_match(char c, const char* match)
