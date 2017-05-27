@@ -1,0 +1,9 @@
+{
+    "config": {
+        "enable-frab": {
+            "help": "Enabled framework abstraction layer",
+            "macro_name": "FEATURE_FRAB",
+            "value": 0
+        }
+    }
+}

@@ -13,3 +13,6 @@
 [submodule "ext/useful-scripts"]
 	path = ext/useful-scripts
 	url = git@gitlab.com:malachi-linux/useful-scripts.git
+[submodule "ext/framework.abstraction"]
+	path = ext/framework.abstraction
+	url = https://github.com/malachib/framework.abstraction.git
