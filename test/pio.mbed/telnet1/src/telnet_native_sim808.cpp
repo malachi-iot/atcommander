@@ -126,21 +126,7 @@ uint16_t telnet_get_site_input(uint8_t* input, uint16_t _request_length, uint16_
     auto return_length = response_length;
 
     if(response_length)
-    {
-        //response_length = 10;
-        //clog << "Pulling in response length of: " << response_length << endl;
-        // TODO: implement a timeout for blocking read operation (hopefully
-        // hidden within istream)
-        while(response_length--)
-        {
-            int ch = atc.cin.get();
-
-            if(ch >= 0)
-                *input++ = ch;
-        }
-
-        //atc.cin.read((char*)input, response_length);
-    }
+        atc.read((char*)input, response_length);
 
     //clog << "Checking for OK" << endl;
 

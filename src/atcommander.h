@@ -1,5 +1,10 @@
 #pragma once
 
+// FIX: This seems to work based on preliminary tests, but I haven't gotten debug_context
+// working with it yet
+#define FEATURE_DISCRETE_PARSER
+
+
 #include "fact/CircularBuffer.h"
 #include <cstdlib>
 #include "fact/string_convert.h"
@@ -22,10 +27,6 @@
 // FIX: really should splice in a different istream
 //#define DEBUG_SIMULATED
 #define DEBUG_ATC_CONTEXT
-
-// FIX: This seems to work based on preliminary tests, but I haven't gotten debug_context
-// working with it yet
-//#define FEATURE_DISCRETE_PARSER
 
 #include "DebugContext.h"
 

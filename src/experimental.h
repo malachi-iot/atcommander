@@ -13,6 +13,8 @@
 #include <time.h>
 #endif
 
+#include "DebugContext.h"
+
 namespace experimental
 {
 // all streams here are assumed binary
@@ -120,6 +122,8 @@ class Tokenizer
     static constexpr char class_name[] = "Tokenizer";
     const char* delimiters;
 
+    DebugContext<class_name> debug_context;
+
     /**
      * See if one character exists within a string of characters
      *
@@ -181,7 +185,7 @@ public:
 #endif
 
 #ifdef DEBUG_ATC_MATCH
-        //debug_context.dump(fstd::clog);
+        debug_context.identify(fstd::clog);
         fstd::clog << "Match raw '" << match << "' = ";
 #endif
 
@@ -319,6 +323,8 @@ public:
     }
 
     int_type peek() { return cin.peek(); }
+
+    int_type get() { return cin.get(); }
 };
 
 
