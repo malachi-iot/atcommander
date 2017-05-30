@@ -8,7 +8,7 @@
         "enable-istream-timeout": {
             "help": "Enabled non-standard istream timeout extensions",
             "macro_name": "FEATURE_IOS_TIMEOUT",
-            "value": 10000
+            "value": 1000
         }
     }
 }

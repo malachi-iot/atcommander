@@ -37,19 +37,8 @@ bool ATCommander::check_for_ok()
 #endif
 }
 
-#ifdef FEATURE_ATC_PEEK
-#define OLD_WHITESPACE_IGNORE
-#endif
-
 void ATCommander::ignore_whitespace_and_newlines()
 {
-#ifdef OLD_WHITESPACE_IGNORE
-    char ch;
-
-    while(is_match(ch = get(), WHITESPACE_NEWLINE));
-
-    unget(ch);
-#else
     int ch;
 
     while((ch = peek_timeout_experimental()) != EOF)
@@ -59,25 +48,16 @@ void ATCommander::ignore_whitespace_and_newlines()
         else
             return;
     }
-#endif
 }
 
 // TODO: upgrade istream to do this using std::ws manipulator ala
 // https://stackoverflow.com/questions/13501862/how-to-properly-use-cin-peek
 void ATCommander::ignore_whitespace()
 {
-#ifdef OLD_WHITESPACE_IGNORE
-    char ch;
-
-    while((ch = get()) == ' ');
-
-    unget(ch);
-#else
     int ch;
 
     while((ch = peek_timeout_experimental()) && ch == ' ')
         cin.ignore();
-#endif
 }
 
 
@@ -86,30 +66,6 @@ bool ATCommander::skip_newline()
 {
     // look for CRLF, LFCR, or LF alone.  CR alone not supported at this time
     ignore_whitespace();
-#ifdef OLD_WHITESPACE_IGNORE
-    char ch = get();
-    if(ch == 13)
-    {
-        ch = get();
-        if(ch == 10)
-        {
-            return true;
-        }
-
-        unget(ch);
-    }
-    else if(ch == 10)
-    {
-        // WARNING: may not be 100% POSIX compliant!
-        ch = cin.peek();
-
-        if (ch == 13)
-            ch = get();
-
-        return true;
-    }
-
-#else
     int ch = peek_timeout_experimental();
 
     if(ch == 13)
@@ -137,7 +93,6 @@ bool ATCommander::skip_newline()
         // a newline
         return true;
     }
-#endif
 
     return false;
 }
@@ -151,21 +106,6 @@ size_t ATCommander::input(char* input, size_t max)
     int ch;
     size_t len = 0;
 
-#ifdef FEATURE_ATC_PEEK
-    while(!is_delimiter(ch = get()) && len < max && ch != -1)
-    {
-        *input++ = ch;
-        len++;
-    }
-
-    // FIX: check if input can be assigned to still
-    // (ensure we haven't exceeded max)
-    *input = 0;
-
-    if(ch != -1)
-        // FIX: be sure to check len also
-        unget(ch);
-#else
     while((ch = peek_timeout_experimental()) != EOF)
     {
         if(len >= max || is_delimiter(ch)) break;
@@ -179,7 +119,6 @@ size_t ATCommander::input(char* input, size_t max)
     // FIX: check if input can be assigned to still
     // (ensure we haven't exceeded max)
     *input = 0;
-#endif
 
     return len;
 }

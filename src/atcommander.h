@@ -37,6 +37,8 @@
 
 //#define DEBUG_ATC_LEGACY_COUT
 
+//#define FEATURE_ATC_EXPERIMENTAL_PEEK_TIMEOUT
+
 namespace layer3 {
 
 // TODO: revisit name of this class
@@ -407,6 +409,7 @@ public:
     }
 #endif
 
+#ifdef FEATURE_ATC_EXPERIMENTAL_PEEK_TIMEOUT
     // timeout to be used with above timeout experimental functions
     uint16_t experimental_timeout_ms = 500;
 
@@ -420,6 +423,11 @@ public:
     // stoke that input, but it just won't ever block
     int peek_timeout_experimental()
     { return peek(experimental_timeout_ms);}
+#else
+    int peek_timeout_experimental()
+    { return cin.peek();}
+
+#endif
 
 #ifndef FEATURE_DISCRETE_PARSER
     bool is_match(char c, const char* match)
