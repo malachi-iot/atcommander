@@ -1,3 +1,5 @@
 lib/util.embedded/src/fact/*
 lib/util.embedded/test*
 lib/util.embedded/src/legacy/*
+lib/util.embedded/ext/*
+lib/atcommander/cmake-build-debug/*
